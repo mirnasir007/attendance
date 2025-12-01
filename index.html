@@ -16,7 +16,15 @@
         /* 100% Width Fix */
         .container-fluid { max-width: 100%; }
 
-        /* Legend Colors */
+        /* Custom Badge Colors for Dashboard */
+        .badge-p { background-color: #198754; color: white; } /* Green - Working */
+        .badge-l { background-color: #ffc107; color: black; } /* Yellow - Late */
+        .badge-a { background-color: #dc3545; color: white; } /* Red - Absence */
+        .badge-w { background-color: #0dcaf0; color: black; } /* Cyan - Half Day */
+        .badge-h { background-color: #6c757d; color: white; } /* Gray - Holiday */
+        .badge-s { background-color: #0d6efd; color: white; } /* Blue - Yearly */
+
+        /* Light Backgrounds for Detailed View (So text is readable) */
         .bg-p { background-color: #d4edda; color: #155724; } 
         .bg-l { background-color: #fff3cd; color: #856404; } 
         .bg-a { background-color: #f8d7da; color: #721c24; } 
@@ -24,7 +32,7 @@
         .bg-h { background-color: #e2e3e5; color: #383d41; } 
         .bg-s { background-color: #cce5ff; color: #004085; } 
 
-        .limit-exceeded { background-color: #ffcccc !important; color: red !important; font-weight: bold; border: 2px solid red; }
+        .limit-exceeded { border: 2px solid red; }
         .hidden { display: none !important; }
         .text-muted-row { opacity: 0.6; background-color: #f0f0f0; }
         
@@ -43,7 +51,6 @@
         .status-badge { display: inline-block; width: 25px; height: 25px; line-height: 25px; border-radius: 50%; font-size: 11px; font-weight: bold; color: #333; }
 
         /* UNIVERSAL FREEZE HEADER STYLING */
-        /* This now applies to ALL tables wrapped in .table-scroll-container */
         .table-scroll-container {
             max-height: 70vh; 
             overflow: auto;
@@ -59,7 +66,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* Fix for Detailed Report's Left Sticky Column + Top Sticky Header Intersection */
+        /* Fix for Detailed Report's Left Sticky Column */
         .sticky-col { 
             position: sticky; 
             left: 0; 
@@ -67,11 +74,24 @@
             z-index: 10; 
             border-right: 2px solid #ddd; 
         }
-        
-        /* The top-left corner cell needs to be on top of everything */
         .sticky-header th.sticky-col {
             z-index: 30 !important;
             background-color: #212529 !important;
+        }
+
+        /* Clickable Name Styling */
+        .clickable-name {
+            cursor: pointer;
+            color: #0d6efd; /* Bootstrap Primary Blue */
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .clickable-name:hover {
+            text-decoration: underline;
+            background-color: #f1f8ff; /* Light blue highlight on hover */
+        }
+        .selected-row-highlight {
+            background-color: #fff3cd !important; /* Yellowish highlight for selected row */
         }
 
         /* Loading Overlay */
@@ -81,6 +101,21 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .error-box { max-width: 400px; text-align: center; display: none; }
+        
+        /* Dashboard Stats Header */
+        #selected-stats-display {
+            font-size: 0.9rem;
+            margin-left: 15px;
+            padding: 5px 10px;
+            background: #fff;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            display: inline-flex;
+            gap: 10px;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .stat-item { display: flex; align-items: center; gap: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -129,46 +164,46 @@
 
     <!-- 1. DASHBOARD SECTION -->
     <div id="dashboard-section">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3 class="header-title">Attendance Dashboard</h3>
-            <select id="monthFilter" class="form-select w-auto" onchange="renderDashboard()">
-                <option value="all" selected>All Time</option>
-                <option value="2025-01">January 2025</option>
-                <option value="2025-02">February 2025</option>
-                <option value="2025-03">March 2025</option>
-                <option value="2025-04">April 2025</option>
-                <option value="2025-05">May 2025</option>
-                <option value="2025-06">June 2025</option>
-                <option value="2025-07">July 2025</option>
-                <option value="2025-08">August 2025</option>
-                <option value="2025-09">September 2025</option>
-                <option value="2025-10">October 2025</option>
-                <option value="2025-11">November 2025</option>
-                <option value="2025-12">December 2025</option>
-            </select>
-        </div>
+        <div class="d-flex flex-wrap align-items-center mb-3">
+            <h3 class="header-title me-2">Attendance Dashboard</h3>
+            
+            <!-- TRICK STATS DISPLAY -->
+            <div id="selected-stats-display" class="hidden">
+                <span class="text-primary" id="stat-name">Select Employee</span>:
+                <span class="stat-item"><span class="badge badge-p">P</span> <span id="stat-p">0</span></span>
+                <span class="stat-item"><span class="badge badge-l">L</span> <span id="stat-l">0</span></span>
+                <span class="stat-item"><span class="badge badge-a">A</span> <span id="stat-a">0</span></span>
+                <span class="stat-item"><span class="badge badge-w">W</span> <span id="stat-w">0</span></span>
+                <span class="stat-item"><span class="badge badge-h">H</span> <span id="stat-h">0</span></span>
+                <span class="stat-item"><span class="badge badge-s">S</span> <span id="stat-s">0</span></span>
+            </div>
 
-        <div class="card mb-3">
-            <div class="card-body py-2">
-                <small class="text-muted"><strong>Legend:</strong> 
-                <span class="badge bg-success">P</span> Working Day | 
-                <span class="badge bg-warning text-dark">L</span> Late | 
-                <span class="badge bg-danger">A</span> Absence | 
-                <span class="badge bg-info text-dark">W</span> Half Day | 
-                <span class="badge bg-secondary">H</span> Holiday | 
-                <span class="badge bg-primary">S</span> Yearly Holiday
-                </small>
+            <div class="ms-auto mt-2 mt-md-0">
+                <select id="monthFilter" class="form-select w-auto" onchange="renderDashboard()">
+                    <option value="all" selected>All Time</option>
+                    <option value="2025-01">January 2025</option>
+                    <option value="2025-02">February 2025</option>
+                    <option value="2025-03">March 2025</option>
+                    <option value="2025-04">April 2025</option>
+                    <option value="2025-05">May 2025</option>
+                    <option value="2025-06">June 2025</option>
+                    <option value="2025-07">July 2025</option>
+                    <option value="2025-08">August 2025</option>
+                    <option value="2025-09">September 2025</option>
+                    <option value="2025-10">October 2025</option>
+                    <option value="2025-11">November 2025</option>
+                    <option value="2025-12">December 2025</option>
+                </select>
             </div>
         </div>
 
         <div class="card">
             <div class="card-body p-0">
-                <!-- FROZEN HEADER WRAPPER -->
                 <div class="table-scroll-container">
                     <table class="table table-bordered text-center align-middle w-100 mb-0">
                         <thead class="table-dark sticky-header">
                             <tr>
-                                <th>Employee Name</th>
+                                <th>Employee Name (Click for Stats)</th>
                                 <th>Working (P)</th>
                                 <th>Late (L)</th>
                                 <th>Absence (A)</th>
@@ -195,7 +230,6 @@
         </div>
         <div class="card">
             <div class="card-body p-0">
-                <!-- FROZEN HEADER WRAPPER -->
                 <div class="table-scroll-container">
                     <table class="table table-bordered table-sm detailed-table mb-0 w-100">
                         <thead class="table-dark sticky-header" id="detailedHeader"></thead>
@@ -231,7 +265,6 @@
         <div class="card">
             <div class="card-body p-0">
                 <form id="attendanceForm">
-                    <!-- FROZEN HEADER WRAPPER -->
                     <div class="table-scroll-container">
                         <table class="table table-striped align-middle w-100 mb-0">
                             <thead class="table-light sticky-header">
@@ -257,19 +290,21 @@
             </button>
         </div>
         <div class="card">
-            <div class="card-body">
-                <table class="table table-hover w-100">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Phone</th>
-                            <th>Join Date</th>
-                            <th>Status / Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="employeeTableBody"></tbody>
-                </table>
+            <div class="card-body p-0">
+                <div class="table-scroll-container">
+                    <table class="table table-hover w-100 mb-0">
+                        <thead class="table-dark sticky-header">
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Join Date</th>
+                                <th>Status / Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeeTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -307,7 +342,6 @@
     </div>
 </div>
 
-<!-- RESIGNATION MODAL -->
 <div class="modal fade" id="resignModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content">
@@ -361,7 +395,7 @@
 
 <script>
     // --- API CONFIG ---
-    // IMPORTANT: UPDATE THIS URL AFTER RE-DEPLOYING code.gs
+    // IMPORTANT: Use your latest deployment URL here
     const API_URL = "https://script.google.com/macros/s/AKfycbzOawB-mS6LIojPJ5RJLJpZKVFYOvd5eLrLIi9PHsjX-OdCexchBmhfMSTJXgHwMgvc/exec";
     
     // --- DATA STORE ---
@@ -468,7 +502,6 @@
         .catch(err => { showLoading(false); alert("Error saving."); });
     }
 
-    // NEW: Handle Resignation
     function openResignModal(id, name) {
         resignContext = { empId: id };
         document.getElementById('resignEmpName').innerText = name;
@@ -493,7 +526,7 @@
                 
                 bootstrap.Modal.getInstance(document.getElementById('resignModal')).hide();
                 renderEmployeeList();
-                renderDailyEntry(); // Re-render to potentially hide them
+                renderDailyEntry(); 
                 showAlert("Updated", "Employee marked as left.");
             }
             showLoading(false);
@@ -505,7 +538,6 @@
         const date = document.getElementById('attendanceDate').value;
         let records = [];
 
-        // Only save data for currently visible employees in the list
         const visibleEmployees = getActiveEmployeesForDate(date);
 
         visibleEmployees.forEach(emp => {
@@ -530,8 +562,10 @@
             attendanceHistory = attendanceHistory.filter(r => r.date !== date); 
             records.forEach(r => attendanceHistory.push(r));
             showAlert("Saved!", "Attendance synced.");
-            dailySessionData = {}; 
-            renderDailyEntry();
+            
+            // KEY CHANGE: Re-load the view for the current date to reflect saved data
+            updateDisplayDate();
+            
             showLoading(false);
         })
         .catch(err => { showLoading(false); alert("Error saving."); });
@@ -539,17 +573,31 @@
 
     // --- UI LOGIC ---
     function updateDisplayDate() {
-        const dateVal = document.getElementById('attendanceDate').valueAsDate;
+        const dateInput = document.getElementById('attendanceDate');
+        const dateVal = dateInput.valueAsDate;
+        const dateStr = dateInput.value; // yyyy-mm-dd
+
         if(dateVal) {
             const options = { day: 'numeric', month: 'long', year: 'numeric' };
             document.getElementById('displayDateStr').innerText = dateVal.toLocaleDateString('en-GB', options);
         }
+        
+        // KEY CHANGE: Check history for existing data before resetting
         dailySessionData = {};
+        
+        employees.forEach(emp => {
+            const record = attendanceHistory.find(r => String(r.empId) === String(emp.id) && r.date === dateStr);
+            if (record) {
+                dailySessionData[emp.id] = { status: record.status, note: record.note || '' };
+            } else {
+                dailySessionData[emp.id] = { status: 'P', note: '' };
+            }
+        });
+
         renderDailyEntry();
     }
 
     function getActiveEmployeesForDate(dateStr) {
-        // Filter logic: Show if NO leave date OR leave date is AFTER the selected date
         return employees.filter(emp => {
             if (!emp.leaveDate) return true; 
             return dateStr <= emp.leaveDate;
@@ -586,12 +634,15 @@
         new bootstrap.Modal(document.getElementById('customAlertModal')).show();
     }
 
+    // --- DASHBOARD UPDATE: Clickable Name ---
     function renderDashboard() {
         const tbody = document.getElementById('dashboardTableBody');
         tbody.innerHTML = '';
         const filter = document.getElementById('monthFilter').value;
+        const statsDisplay = document.getElementById('selected-stats-display');
+        statsDisplay.classList.add('hidden'); // Hide top stats initially
 
-        employees.forEach(emp => {
+        employees.forEach((emp, index) => {
             let stats = { P:0, L:0, A:0, W:0, H:0, S:0 };
             let empHistory = attendanceHistory.filter(r => String(r.empId) === String(emp.id));
 
@@ -600,23 +651,41 @@
             }
 
             empHistory.forEach(r => { if(stats[r.status] !== undefined) stats[r.status]++; });
-            const sClass = stats.S > 10 ? 'limit-exceeded' : '';
             
-            // Mark left employees visually in dashboard
             const nameDisplay = emp.leaveDate ? `${emp.name} <span class="badge bg-secondary" style="font-size:10px">LEFT</span>` : emp.name;
 
+            const jsonStats = JSON.stringify(stats);
+
             tbody.innerHTML += `
-                <tr>
-                    <td class="text-start fw-bold">${nameDisplay}</td>
-                    <td class="bg-p bg-opacity-25">${stats.P}</td>
-                    <td class="bg-l bg-opacity-25">${stats.L}</td>
-                    <td class="bg-a bg-opacity-25">${stats.A}</td>
-                    <td class="bg-w bg-opacity-25">${stats.W}</td>
-                    <td class="bg-h bg-opacity-25">${stats.H}</td>
-                    <td class="${sClass}">${stats.S}</td>
+                <tr id="dash-row-${emp.id}">
+                    <td class="text-start fw-bold clickable-name" 
+                        onclick='showTopStats("${emp.name}", ${jsonStats}, ${emp.id})'>
+                        ${nameDisplay}
+                    </td>
+                    <td><span class="badge badge-p rounded-pill">${stats.P}</span></td>
+                    <td><span class="badge badge-l rounded-pill">${stats.L}</span></td>
+                    <td><span class="badge badge-a rounded-pill">${stats.A}</span></td>
+                    <td><span class="badge badge-w rounded-pill">${stats.W}</span></td>
+                    <td><span class="badge badge-h rounded-pill">${stats.H}</span></td>
+                    <td><span class="badge badge-s rounded-pill">${stats.S}</span></td>
                 </tr>
             `;
         });
+    }
+
+    function showTopStats(name, stats, empId) {
+        document.querySelectorAll('#dashboardTableBody tr').forEach(r => r.classList.remove('selected-row-highlight'));
+        document.getElementById(`dash-row-${empId}`).classList.add('selected-row-highlight');
+
+        document.getElementById('stat-name').innerText = name;
+        document.getElementById('stat-p').innerText = stats.P;
+        document.getElementById('stat-l').innerText = stats.L;
+        document.getElementById('stat-a').innerText = stats.A;
+        document.getElementById('stat-w').innerText = stats.W;
+        document.getElementById('stat-h').innerText = stats.H;
+        document.getElementById('stat-s').innerText = stats.S;
+        
+        document.getElementById('selected-stats-display').classList.remove('hidden');
     }
 
     function renderDetailedView() {
@@ -628,7 +697,6 @@
         const month = parseInt(monthStr) - 1; 
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         
-        // Sticky Header First Cell
         let headerHtml = '<th class="sticky-col">Employee Name</th>';
         for(let i=1; i<=daysInMonth; i++) headerHtml += `<th>${i}</th>`;
         document.getElementById('detailedHeader').innerHTML = `<tr>${headerHtml}</tr>`;
@@ -644,7 +712,6 @@
                 let dStr = String(d).padStart(2,'0');
                 let fullDate = `${year}-${String(month+1).padStart(2,'0')}-${dStr}`;
 
-                // Grey out cells after leave date
                 if(emp.leaveDate && fullDate > emp.leaveDate) {
                      rowHtml += `<td class="text-muted-row"></td>`;
                      continue;

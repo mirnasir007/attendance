@@ -26,6 +26,7 @@
 
         .limit-exceeded { background-color: #ffcccc !important; color: red !important; font-weight: bold; border: 2px solid red; }
         .hidden { display: none !important; }
+        .text-muted-row { opacity: 0.6; background-color: #f0f0f0; }
         
         /* Radio Button Styling */
         .btn-check:checked + .btn-outline-success { background-color: #198754; color: white; }
@@ -38,10 +39,40 @@
         .status-group label { width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; margin: 0 2px; font-weight: bold; border-radius: 5px; cursor: pointer; }
 
         /* Detailed Table Styling */
-        .detailed-table-wrapper { overflow-x: auto; }
         .detailed-table th, .detailed-table td { min-width: 40px; text-align: center; font-size: 13px; padding: 5px; }
-        .sticky-col { position: sticky; left: 0; background: white; z-index: 10; border-right: 2px solid #ddd; }
         .status-badge { display: inline-block; width: 25px; height: 25px; line-height: 25px; border-radius: 50%; font-size: 11px; font-weight: bold; color: #333; }
+
+        /* UNIVERSAL FREEZE HEADER STYLING */
+        /* This now applies to ALL tables wrapped in .table-scroll-container */
+        .table-scroll-container {
+            max-height: 70vh; 
+            overflow: auto;
+            position: relative;
+        }
+        
+        .sticky-header th {
+            position: sticky;
+            top: 0;
+            background-color: #212529 !important; /* Forces dark header background */
+            color: white;
+            z-index: 20;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Fix for Detailed Report's Left Sticky Column + Top Sticky Header Intersection */
+        .sticky-col { 
+            position: sticky; 
+            left: 0; 
+            background: white; 
+            z-index: 10; 
+            border-right: 2px solid #ddd; 
+        }
+        
+        /* The top-left corner cell needs to be on top of everything */
+        .sticky-header th.sticky-col {
+            z-index: 30 !important;
+            background-color: #212529 !important;
+        }
 
         /* Loading Overlay */
         #loadingOverlay {
@@ -94,7 +125,6 @@
     </div>
 </nav>
 
-<!-- Main Container set to Fluid for Full Width -->
 <div class="container-fluid px-4">
 
     <!-- 1. DASHBOARD SECTION -->
@@ -132,10 +162,11 @@
         </div>
 
         <div class="card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered text-center align-middle w-100">
-                        <thead class="table-dark">
+            <div class="card-body p-0">
+                <!-- FROZEN HEADER WRAPPER -->
+                <div class="table-scroll-container">
+                    <table class="table table-bordered text-center align-middle w-100 mb-0">
+                        <thead class="table-dark sticky-header">
                             <tr>
                                 <th>Employee Name</th>
                                 <th>Working (P)</th>
@@ -163,14 +194,15 @@
             </div>
         </div>
         <div class="card">
-            <div class="card-body">
-                <div class="detailed-table-wrapper">
+            <div class="card-body p-0">
+                <!-- FROZEN HEADER WRAPPER -->
+                <div class="table-scroll-container">
                     <table class="table table-bordered table-sm detailed-table mb-0 w-100">
-                        <thead class="table-dark" id="detailedHeader"></thead>
+                        <thead class="table-dark sticky-header" id="detailedHeader"></thead>
                         <tbody id="detailedBody"></tbody>
                     </table>
                 </div>
-                <div class="mt-2 text-end">
+                <div class="mt-2 text-end p-2">
                     <span class="badge bg-info text-dark">Tip: Hover on cells for notes & time</span>
                 </div>
             </div>
@@ -179,36 +211,37 @@
 
     <!-- 3. DAILY ENTRY SECTION -->
     <div id="daily-section" class="hidden">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
             <div>
                 <h3 class="header-title">Daily Attendance Entry</h3>
                 <p class="text-muted mb-0" id="displayDateStr">Loading...</p>
             </div>
-            <div class="input-group w-auto">
-                <span class="input-group-text">Date:</span>
-                <input type="date" id="attendanceDate" class="form-control" onchange="updateDisplayDate()">
+            
+            <div class="d-flex gap-2 align-items-center">
+                <div class="input-group w-auto">
+                    <span class="input-group-text">Date:</span>
+                    <input type="date" id="attendanceDate" class="form-control" onchange="updateDisplayDate()">
+                </div>
+                <button type="button" class="btn btn-primary" onclick="saveAttendance()">
+                    Save Today's Attendance
+                </button>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-body">
+            <div class="card-body p-0">
                 <form id="attendanceForm">
-                    <div class="table-responsive">
-                        <table class="table table-striped align-middle w-100">
-                            <thead class="table-light">
+                    <!-- FROZEN HEADER WRAPPER -->
+                    <div class="table-scroll-container">
+                        <table class="table table-striped align-middle w-100 mb-0">
+                            <thead class="table-light sticky-header">
                                 <tr>
                                     <th>Employee Name</th>
                                     <th class="text-center">Status Selection</th>
-                                    <th class="text-end">Note / Time</th>
                                 </tr>
                             </thead>
                             <tbody id="dailyEntryTableBody"></tbody>
                         </table>
-                    </div>
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
-                        <button type="button" class="btn btn-primary btn-lg" onclick="saveAttendance()">
-                            Save Today's Attendance
-                        </button>
                     </div>
                 </form>
             </div>
@@ -232,6 +265,7 @@
                             <th>Name</th>
                             <th>Phone</th>
                             <th>Join Date</th>
+                            <th>Status / Action</th>
                         </tr>
                     </thead>
                     <tbody id="employeeTableBody"></tbody>
@@ -273,6 +307,26 @@
     </div>
 </div>
 
+<!-- RESIGNATION MODAL -->
+<div class="modal fade" id="resignModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white py-2">
+                <h6 class="modal-title fw-bold">Employee Resignation</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-muted mb-2">Mark <b id="resignEmpName"></b> as left?</p>
+                <label class="form-label small fw-bold">Last Working Day:</label>
+                <input type="date" id="resignDateInput" class="form-control form-control-sm">
+            </div>
+            <div class="modal-footer py-1">
+                <button type="button" class="btn btn-danger btn-sm w-100" onclick="confirmResign()">Confirm Resignation</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="addEmployeeModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -307,8 +361,7 @@
 
 <script>
     // --- API CONFIG ---
-    // IMPORTANT: PASTE YOUR NEW DEPLOYMENT URL HERE
-    // Example: "https://script.google.com/macros/s/AKfycb.../exec"
+    // IMPORTANT: UPDATE THIS URL AFTER RE-DEPLOYING code.gs
     const API_URL = "https://script.google.com/macros/s/AKfycbzOawB-mS6LIojPJ5RJLJpZKVFYOvd5eLrLIi9PHsjX-OdCexchBmhfMSTJXgHwMgvc/exec";
     
     // --- DATA STORE ---
@@ -316,19 +369,19 @@
     let attendanceHistory = [];
     let dailySessionData = {}; 
     let currentModalContext = { empId: null, status: null };
+    let resignContext = { empId: null };
 
     // --- INITIALIZATION ---
     window.onload = function() {
-        // Init UI
         const today = new Date();
         document.getElementById('attendanceDate').valueAsDate = today;
         document.getElementById('empJoinDate').valueAsDate = today;
+        document.getElementById('resignDateInput').valueAsDate = today;
         
         const yyyy = today.getFullYear();
         const mm = String(today.getMonth() + 1).padStart(2, '0');
         document.getElementById('detailMonthInput').value = `${yyyy}-${mm}`;
 
-        // Attempt Connection
         loadDataFromSheet();
     };
 
@@ -354,22 +407,16 @@
     // --- API CALLS ---
     function loadDataFromSheet() {
         showLoading(true);
-
-        // Safety Timeout (8 seconds)
-        const safetyTimer = setTimeout(() => {
-            showLoading(true, true); // Show error state
-        }, 8000);
+        const safetyTimer = setTimeout(() => { showLoading(true, true); }, 8000);
 
         fetch(API_URL + "?op=get_data")
             .then(res => res.json())
             .then(data => {
-                clearTimeout(safetyTimer); // Clear timeout on success
-                
+                clearTimeout(safetyTimer);
                 if(data.status && data.status === 'error') {
                      alert("Script Error: " + data.message);
                      return;
                 }
-
                 employees = data.employees || [];
                 attendanceHistory = data.attendance || [];
                 
@@ -378,24 +425,20 @@
                 renderEmployeeList(); 
                 showLoading(false);
             })
-            .catch(err => {
-                // We let the timeout handle the UI, but logging here
-                console.error("Fetch Error:", err);
-            });
+            .catch(err => { console.error("Fetch Error:", err); });
     }
 
-    // Fallback if connection fails (Demo Mode)
     function loadDemoData() {
         employees = [
-            { id: 1, name: "Demo User 1", phone: "01700000000", joinDate: "2023-01-01" },
-            { id: 2, name: "Demo User 2", phone: "01800000000", joinDate: "2023-02-01" }
+            { id: 1, name: "Demo User 1", phone: "017...", joinDate: "2023-01-01", leaveDate: "" },
+            { id: 2, name: "Demo User 2 (Left)", phone: "018...", joinDate: "2023-02-01", leaveDate: "2024-01-01" }
         ];
         attendanceHistory = [];
         updateDisplayDate();
         renderDashboard();
         renderEmployeeList();
         showLoading(false);
-        alert("Running in Demo Mode. Data won't save to Sheets.");
+        alert("Running in Demo Mode.");
     }
 
     function saveEmployee() {
@@ -405,7 +448,6 @@
         if(!name || !phone) return;
 
         showLoading(true);
-        // Using no-cors mode logic with text/plain payload
         fetch(API_URL, {
             method: "POST",
             body: JSON.stringify({ op: "add_employee", name, phone, joinDate: date }),
@@ -414,26 +456,59 @@
         .then(res => res.json())
         .then(data => {
             if(data.result === "success") {
-                employees.push({ id: data.id, name, phone, joinDate: date });
+                employees.push({ id: data.id, name, phone, joinDate: date, leaveDate: "" });
                 bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal')).hide();
                 renderEmployeeList();
                 renderDashboard(); 
-                showAlert("Success", "Saved to Google Sheet!");
+                renderDailyEntry();
+                showAlert("Success", "New Employee Added!");
             }
             showLoading(false);
         })
-        .catch(err => {
-            console.error(err);
+        .catch(err => { showLoading(false); alert("Error saving."); });
+    }
+
+    // NEW: Handle Resignation
+    function openResignModal(id, name) {
+        resignContext = { empId: id };
+        document.getElementById('resignEmpName').innerText = name;
+        new bootstrap.Modal(document.getElementById('resignModal')).show();
+    }
+
+    function confirmResign() {
+        const date = document.getElementById('resignDateInput').value;
+        if(!date) return alert("Please pick a date");
+
+        showLoading(true);
+        fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({ op: "mark_left", id: resignContext.empId, date: date }),
+            headers: { "Content-Type": "text/plain" }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.result === "success") {
+                const emp = employees.find(e => e.id == resignContext.empId);
+                if(emp) emp.leaveDate = date;
+                
+                bootstrap.Modal.getInstance(document.getElementById('resignModal')).hide();
+                renderEmployeeList();
+                renderDailyEntry(); // Re-render to potentially hide them
+                showAlert("Updated", "Employee marked as left.");
+            }
             showLoading(false);
-            alert("Error saving. Check console.");
-        });
+        })
+        .catch(err => { showLoading(false); alert("Error updating status."); });
     }
 
     function saveAttendance() {
         const date = document.getElementById('attendanceDate').value;
         let records = [];
 
-        employees.forEach(emp => {
+        // Only save data for currently visible employees in the list
+        const visibleEmployees = getActiveEmployeesForDate(date);
+
+        visibleEmployees.forEach(emp => {
             const s = dailySessionData[emp.id] || { status: 'P', note: '' };
             records.push({
                 empId: emp.id,
@@ -445,7 +520,6 @@
         });
 
         showLoading(true);
-        
         fetch(API_URL, {
             method: "POST",
             body: JSON.stringify({ op: "save_attendance", data: records }),
@@ -455,17 +529,12 @@
         .then(data => {
             attendanceHistory = attendanceHistory.filter(r => r.date !== date); 
             records.forEach(r => attendanceHistory.push(r));
-
-            showAlert("Saved!", "Attendance synced with Google Sheet.");
+            showAlert("Saved!", "Attendance synced.");
             dailySessionData = {}; 
             renderDailyEntry();
             showLoading(false);
         })
-        .catch(err => {
-            console.error(err);
-            showLoading(false);
-            alert("Error saving attendance.");
-        });
+        .catch(err => { showLoading(false); alert("Error saving."); });
     }
 
     // --- UI LOGIC ---
@@ -477,6 +546,14 @@
         }
         dailySessionData = {};
         renderDailyEntry();
+    }
+
+    function getActiveEmployeesForDate(dateStr) {
+        // Filter logic: Show if NO leave date OR leave date is AFTER the selected date
+        return employees.filter(emp => {
+            if (!emp.leaveDate) return true; 
+            return dateStr <= emp.leaveDate;
+        });
     }
 
     function formatTimeAMPM(time24) {
@@ -524,10 +601,13 @@
 
             empHistory.forEach(r => { if(stats[r.status] !== undefined) stats[r.status]++; });
             const sClass = stats.S > 10 ? 'limit-exceeded' : '';
+            
+            // Mark left employees visually in dashboard
+            const nameDisplay = emp.leaveDate ? `${emp.name} <span class="badge bg-secondary" style="font-size:10px">LEFT</span>` : emp.name;
 
             tbody.innerHTML += `
                 <tr>
-                    <td class="text-start fw-bold">${emp.name}</td>
+                    <td class="text-start fw-bold">${nameDisplay}</td>
                     <td class="bg-p bg-opacity-25">${stats.P}</td>
                     <td class="bg-l bg-opacity-25">${stats.L}</td>
                     <td class="bg-a bg-opacity-25">${stats.A}</td>
@@ -548,6 +628,7 @@
         const month = parseInt(monthStr) - 1; 
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         
+        // Sticky Header First Cell
         let headerHtml = '<th class="sticky-col">Employee Name</th>';
         for(let i=1; i<=daysInMonth; i++) headerHtml += `<th>${i}</th>`;
         document.getElementById('detailedHeader').innerHTML = `<tr>${headerHtml}</tr>`;
@@ -556,10 +637,18 @@
         tbody.innerHTML = '';
 
         employees.forEach(emp => {
-            let rowHtml = `<tr><td class="sticky-col fw-bold text-start bg-light">${emp.name}</td>`;
+            const nameDisplay = emp.leaveDate ? `${emp.name} (Left)` : emp.name;
+            let rowHtml = `<tr><td class="sticky-col fw-bold text-start bg-light">${nameDisplay}</td>`;
+            
             for(let d=1; d<=daysInMonth; d++) {
                 let dStr = String(d).padStart(2,'0');
                 let fullDate = `${year}-${String(month+1).padStart(2,'0')}-${dStr}`;
+
+                // Grey out cells after leave date
+                if(emp.leaveDate && fullDate > emp.leaveDate) {
+                     rowHtml += `<td class="text-muted-row"></td>`;
+                     continue;
+                }
 
                 const record = attendanceHistory.find(r => String(r.empId) === String(emp.id) && r.date === fullDate);
                 
@@ -589,11 +678,18 @@
     function renderDailyEntry() {
         const tbody = document.getElementById('dailyEntryTableBody');
         tbody.innerHTML = '';
+        
+        const selectedDate = document.getElementById('attendanceDate').value;
+        const activeEmployees = getActiveEmployeesForDate(selectedDate);
 
-        employees.forEach(emp => {
+        if(activeEmployees.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">No active employees for this date.</td></tr>';
+            return;
+        }
+
+        activeEmployees.forEach(emp => {
             const currentStatus = dailySessionData[emp.id]?.status || 'P';
-            const currentNote = dailySessionData[emp.id]?.note || '';
-
+            
             let buttons = '';
             ['P','L','A','W','H','S'].forEach(code => {
                 let color = code=='P'?'success': code=='L'?'warning': code=='A'?'danger': code=='W'?'info': code=='H'?'secondary':'primary';
@@ -605,18 +701,10 @@
                 `;
             });
 
-            let displayNoteVal = currentNote;
-            if (currentStatus === 'L' && currentNote) displayNoteVal = formatTimeAMPM(currentNote);
-
             tbody.innerHTML += `
                 <tr>
                     <td class="fw-bold">${emp.name}</td>
                     <td class="text-center"><div class="status-group">${buttons}</div></td>
-                    <td class="text-end">
-                        <span id="note_display_${emp.id}" class="badge bg-light text-dark border p-2">
-                             ${displayNoteVal ? (currentStatus === 'L' ? '🕒 ' : '📝 ') + displayNoteVal : '-'}
-                        </span>
-                    </td>
                 </tr>
             `;
             if(!dailySessionData[emp.id]) dailySessionData[emp.id] = { status: 'P', note: '' };
@@ -629,7 +717,6 @@
             openNoteModal(empId, status);
         } else {
             dailySessionData[empId].note = '';
-            updateNoteDisplay(empId);
         }
     }
 
@@ -665,23 +752,26 @@
         if(!val) val = status === 'L' ? 'No time' : 'No details';
 
         dailySessionData[empId].note = val;
-        updateNoteDisplay(empId);
         closeNoteModal();
-    }
-
-    function updateNoteDisplay(empId) {
-        const data = dailySessionData[empId];
-        const span = document.getElementById(`note_display_${empId}`);
-        let displayVal = data.note;
-        if(data.status === 'L') displayVal = formatTimeAMPM(data.note);
-        span.innerHTML = data.note ? (data.status === 'L' ? '🕒 ' : '📝 ') + displayVal : '-';
     }
 
     function renderEmployeeList() {
         const tbody = document.getElementById('employeeTableBody');
         tbody.innerHTML = '';
         employees.forEach(emp => {
-            tbody.innerHTML += `<tr><td>${emp.id}</td><td>${emp.name}</td><td>${emp.phone}</td><td>${emp.joinDate}</td></tr>`;
+            let statusBtn = '';
+            if(emp.leaveDate) {
+                statusBtn = `<span class="badge bg-secondary">Left: ${emp.leaveDate}</span>`;
+            } else {
+                statusBtn = `<button class="btn btn-sm btn-outline-danger" onclick="openResignModal(${emp.id}, '${emp.name}')">Resign / Left</button>`;
+            }
+            tbody.innerHTML += `<tr>
+                <td>${emp.id}</td>
+                <td>${emp.name}</td>
+                <td>${emp.phone}</td>
+                <td>${emp.joinDate}</td>
+                <td>${statusBtn}</td>
+            </tr>`;
         });
     }
 

@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance PFF Premium</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .nav-link { cursor: pointer; font-weight: 600; }
+        .card { border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: none; }
+        .header-title { color: #2c3e50; font-weight: bold; }
+        
+        /* 100% Width Fix */
+        .container-fluid { max-width: 100%; }
+
+        /* Legend Colors */
+        .bg-p { background-color: #d4edda; color: #155724; } 
+        .bg-l { background-color: #fff3cd; color: #856404; } 
+        .bg-a { background-color: #f8d7da; color: #721c24; } 
+        .bg-w { background-color: #d1ecf1; color: #0c5460; } 
+        .bg-h { background-color: #e2e3e5; color: #383d41; } 
+        .bg-s { background-color: #cce5ff; color: #004085; } 
+
+        .limit-exceeded { background-color: #ffcccc !important; color: red !important; font-weight: bold; border: 2px solid red; }
+        .hidden { display: none !important; }
+        
+        /* Radio Button Styling */
+        .btn-check:checked + .btn-outline-success { background-color: #198754; color: white; }
+        .btn-check:checked + .btn-outline-warning { background-color: #ffc107; color: black; }
+        .btn-check:checked + .btn-outline-danger { background-color: #dc3545; color: white; }
+        .btn-check:checked + .btn-outline-info { background-color: #0dcaf0; color: black; }
+        .btn-check:checked + .btn-outline-secondary { background-color: #6c757d; color: white; }
+        .btn-check:checked + .btn-outline-primary { background-color: #0d6efd; color: white; }
+        
+        .status-group label { width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; margin: 0 2px; font-weight: bold; border-radius: 5px; cursor: pointer; }
+
+        /* Detailed Table Styling */
+        .detailed-table-wrapper { overflow-x: auto; }
+        .detailed-table th, .detailed-table td { min-width: 40px; text-align: center; font-size: 13px; padding: 5px; }
+        .sticky-col { position: sticky; left: 0; background: white; z-index: 10; border-right: 2px solid #ddd; }
+        .status-badge { display: inline-block; width: 25px; height: 25px; line-height: 25px; border-radius: 50%; font-size: 11px; font-weight: bold; color: #333; }
+
+        /* Loading Overlay */
+        #loadingOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .error-box { max-width: 400px; text-align: center; display: none; }
+    </style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay">
+    <div id="spinnerBox" class="text-center">
+        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+        <h5 class="text-secondary">Connecting to Google Sheets...</h5>
+        <small class="text-muted">Please wait while we fetch data</small>
+    </div>
+    
+    <div id="errorBox" class="error-box">
+        <div class="fs-1 mb-2">⚠️</div>
+        <h4 class="text-danger">Connection Failed</h4>
+        <p class="text-muted small mb-3">
+            Could not connect to Google Apps Script.<br>
+            <b>Possible Reasons:</b><br>
+            1. You didn't create a "New Deployment".<br>
+            2. "Who has access" is not set to "Anyone".<br>
+            3. The URL in code is wrong.
+        </p>
+        <button class="btn btn-primary" onclick="location.reload()">Retry Connection</button>
+        <button class="btn btn-outline-secondary mt-2" onclick="loadDemoData()">Load Demo Mode (Offline)</button>
+    </div>
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-bold" href="#">PFF Premium</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link active" id="nav-dashboard" onclick="switchTab('dashboard')">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" id="nav-details" onclick="switchTab('details')">Detailed Report</a></li>
+                <li class="nav-item"><a class="nav-link" id="nav-daily" onclick="switchTab('daily')">Daily Entry</a></li>
+                <li class="nav-item"><a class="nav-link" id="nav-employees" onclick="switchTab('employees')">Employees</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Container set to Fluid for Full Width -->
+<div class="container-fluid px-4">
+
+    <!-- 1. DASHBOARD SECTION -->
+    <div id="dashboard-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="header-title">Attendance Dashboard</h3>
+            <select id="monthFilter" class="form-select w-auto" onchange="renderDashboard()">
+                <option value="all" selected>All Time</option>
+                <option value="2025-01">January 2025</option>
+                <option value="2025-02">February 2025</option>
+                <option value="2025-03">March 2025</option>
+                <option value="2025-04">April 2025</option>
+                <option value="2025-05">May 2025</option>
+                <option value="2025-06">June 2025</option>
+                <option value="2025-07">July 2025</option>
+                <option value="2025-08">August 2025</option>
+                <option value="2025-09">September 2025</option>
+                <option value="2025-10">October 2025</option>
+                <option value="2025-11">November 2025</option>
+                <option value="2025-12">December 2025</option>
+            </select>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body py-2">
+                <small class="text-muted"><strong>Legend:</strong> 
+                <span class="badge bg-success">P</span> Working Day | 
+                <span class="badge bg-warning text-dark">L</span> Late | 
+                <span class="badge bg-danger">A</span> Absence | 
+                <span class="badge bg-info text-dark">W</span> Half Day | 
+                <span class="badge bg-secondary">H</span> Holiday | 
+                <span class="badge bg-primary">S</span> Yearly Holiday
+                </small>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered text-center align-middle w-100">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Employee Name</th>
+                                <th>Working (P)</th>
+                                <th>Late (L)</th>
+                                <th>Absence (A)</th>
+                                <th>Half Day (W)</th>
+                                <th>Holiday (H)</th>
+                                <th>Yearly (S)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboardTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. DETAILED REPORT SECTION -->
+    <div id="details-section" class="hidden">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="header-title">Monthly Detailed Report</h3>
+            <div class="d-flex align-items-center gap-2">
+                <label class="fw-bold">Select Month:</label>
+                <input type="month" id="detailMonthInput" class="form-control form-control-sm w-auto" onchange="renderDetailedView()">
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="detailed-table-wrapper">
+                    <table class="table table-bordered table-sm detailed-table mb-0 w-100">
+                        <thead class="table-dark" id="detailedHeader"></thead>
+                        <tbody id="detailedBody"></tbody>
+                    </table>
+                </div>
+                <div class="mt-2 text-end">
+                    <span class="badge bg-info text-dark">Tip: Hover on cells for notes & time</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. DAILY ENTRY SECTION -->
+    <div id="daily-section" class="hidden">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="header-title">Daily Attendance Entry</h3>
+                <p class="text-muted mb-0" id="displayDateStr">Loading...</p>
+            </div>
+            <div class="input-group w-auto">
+                <span class="input-group-text">Date:</span>
+                <input type="date" id="attendanceDate" class="form-control" onchange="updateDisplayDate()">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form id="attendanceForm">
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle w-100">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Employee Name</th>
+                                    <th class="text-center">Status Selection</th>
+                                    <th class="text-end">Note / Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dailyEntryTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                        <button type="button" class="btn btn-primary btn-lg" onclick="saveAttendance()">
+                            Save Today's Attendance
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. EMPLOYEES SECTION -->
+    <div id="employees-section" class="hidden">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="header-title">Employee List</h3>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addEmployeeModal" onclick="setDefaultDate()">
+                + New Employee
+            </button>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-hover w-100">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Join Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeeTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- MODALS -->
+<div class="modal fade" id="customAlertModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-4">
+            <div class="mb-2 fs-1" id="alertIcon">✅</div>
+            <h4 id="alertTitle" class="fw-bold">Success</h4>
+            <p id="alertMsg" class="text-muted mb-4">Operation completed.</p>
+            <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">OK</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="noteModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header py-2 bg-light">
+                <h6 class="modal-title fw-bold" id="noteModalTitle">Add Note</h6>
+                <button type="button" class="btn-close" onclick="closeNoteModal()"></button>
+            </div>
+            <div class="modal-body">
+                <label id="noteLabel" class="form-label small text-muted">Reason:</label>
+                <input type="text" id="modalNoteInput" class="form-control form-control-sm mb-2" placeholder="Enter details...">
+                <input type="time" id="modalTimeInput" class="form-control form-control-sm mb-2 hidden">
+            </div>
+            <div class="modal-footer py-1 border-0">
+                <button type="button" class="btn btn-primary btn-sm w-100" onclick="confirmNote()">Save Note</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addEmployeeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Add New Employee</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addEmployeeForm">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" id="empName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <input type="text" class="form-control" id="empPhone" required placeholder="01xxxxxxxxx">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Join Date</label>
+                        <input type="date" class="form-control" id="empJoinDate" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="saveEmployee()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // --- API CONFIG ---
+    // IMPORTANT: PASTE YOUR NEW DEPLOYMENT URL HERE
+    // Example: "https://script.google.com/macros/s/AKfycb.../exec"
+    const API_URL = "https://script.google.com/macros/s/AKfycbzOawB-mS6LIojPJ5RJLJpZKVFYOvd5eLrLIi9PHsjX-OdCexchBmhfMSTJXgHwMgvc/exec";
+    
+    // --- DATA STORE ---
+    let employees = [];
+    let attendanceHistory = [];
+    let dailySessionData = {}; 
+    let currentModalContext = { empId: null, status: null };
+
+    // --- INITIALIZATION ---
+    window.onload = function() {
+        // Init UI
+        const today = new Date();
+        document.getElementById('attendanceDate').valueAsDate = today;
+        document.getElementById('empJoinDate').valueAsDate = today;
+        
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        document.getElementById('detailMonthInput').value = `${yyyy}-${mm}`;
+
+        // Attempt Connection
+        loadDataFromSheet();
+    };
+
+    function showLoading(show, isError = false) {
+        const overlay = document.getElementById('loadingOverlay');
+        const spinner = document.getElementById('spinnerBox');
+        const errorBox = document.getElementById('errorBox');
+
+        if(show) {
+            overlay.classList.remove('hidden');
+            if(isError) {
+                spinner.style.display = 'none';
+                errorBox.style.display = 'block';
+            } else {
+                spinner.style.display = 'block';
+                errorBox.style.display = 'none';
+            }
+        } else {
+            overlay.classList.add('hidden');
+        }
+    }
+
+    // --- API CALLS ---
+    function loadDataFromSheet() {
+        showLoading(true);
+
+        // Safety Timeout (8 seconds)
+        const safetyTimer = setTimeout(() => {
+            showLoading(true, true); // Show error state
+        }, 8000);
+
+        fetch(API_URL + "?op=get_data")
+            .then(res => res.json())
+            .then(data => {
+                clearTimeout(safetyTimer); // Clear timeout on success
+                
+                if(data.status && data.status === 'error') {
+                     alert("Script Error: " + data.message);
+                     return;
+                }
+
+                employees = data.employees || [];
+                attendanceHistory = data.attendance || [];
+                
+                updateDisplayDate();
+                renderDashboard();
+                renderEmployeeList(); 
+                showLoading(false);
+            })
+            .catch(err => {
+                // We let the timeout handle the UI, but logging here
+                console.error("Fetch Error:", err);
+            });
+    }
+
+    // Fallback if connection fails (Demo Mode)
+    function loadDemoData() {
+        employees = [
+            { id: 1, name: "Demo User 1", phone: "01700000000", joinDate: "2023-01-01" },
+            { id: 2, name: "Demo User 2", phone: "01800000000", joinDate: "2023-02-01" }
+        ];
+        attendanceHistory = [];
+        updateDisplayDate();
+        renderDashboard();
+        renderEmployeeList();
+        showLoading(false);
+        alert("Running in Demo Mode. Data won't save to Sheets.");
+    }
+
+    function saveEmployee() {
+        const name = document.getElementById('empName').value;
+        const phone = document.getElementById('empPhone').value;
+        const date = document.getElementById('empJoinDate').value;
+        if(!name || !phone) return;
+
+        showLoading(true);
+        // Using no-cors mode logic with text/plain payload
+        fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({ op: "add_employee", name, phone, joinDate: date }),
+            headers: { "Content-Type": "text/plain" }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.result === "success") {
+                employees.push({ id: data.id, name, phone, joinDate: date });
+                bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal')).hide();
+                renderEmployeeList();
+                renderDashboard(); 
+                showAlert("Success", "Saved to Google Sheet!");
+            }
+            showLoading(false);
+        })
+        .catch(err => {
+            console.error(err);
+            showLoading(false);
+            alert("Error saving. Check console.");
+        });
+    }
+
+    function saveAttendance() {
+        const date = document.getElementById('attendanceDate').value;
+        let records = [];
+
+        employees.forEach(emp => {
+            const s = dailySessionData[emp.id] || { status: 'P', note: '' };
+            records.push({
+                empId: emp.id,
+                name: emp.name,
+                date: date,
+                status: s.status,
+                note: s.note
+            });
+        });
+
+        showLoading(true);
+        
+        fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({ op: "save_attendance", data: records }),
+            headers: { "Content-Type": "text/plain" }
+        })
+        .then(res => res.json())
+        .then(data => {
+            attendanceHistory = attendanceHistory.filter(r => r.date !== date); 
+            records.forEach(r => attendanceHistory.push(r));
+
+            showAlert("Saved!", "Attendance synced with Google Sheet.");
+            dailySessionData = {}; 
+            renderDailyEntry();
+            showLoading(false);
+        })
+        .catch(err => {
+            console.error(err);
+            showLoading(false);
+            alert("Error saving attendance.");
+        });
+    }
+
+    // --- UI LOGIC ---
+    function updateDisplayDate() {
+        const dateVal = document.getElementById('attendanceDate').valueAsDate;
+        if(dateVal) {
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            document.getElementById('displayDateStr').innerText = dateVal.toLocaleDateString('en-GB', options);
+        }
+        dailySessionData = {};
+        renderDailyEntry();
+    }
+
+    function formatTimeAMPM(time24) {
+        if (!time24 || !time24.includes(':')) return time24;
+        let [h, m] = time24.split(':');
+        let hours = parseInt(h);
+        let ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        return `${hours}:${m} ${ampm}`;
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+        ['dashboard', 'details', 'daily', 'employees'].forEach(id => document.getElementById(id+'-section').classList.add('hidden'));
+
+        document.getElementById('nav-' + tab).classList.add('active');
+        document.getElementById(tab + '-section').classList.remove('hidden');
+
+        if(tab === 'dashboard') renderDashboard();
+        if(tab === 'details') renderDetailedView();
+        if(tab === 'daily') renderDailyEntry();
+        if(tab === 'employees') renderEmployeeList();
+    }
+
+    function showAlert(title, msg, type='success') {
+        document.getElementById('alertTitle').innerText = title;
+        document.getElementById('alertMsg').innerText = msg;
+        document.getElementById('alertIcon').innerText = type === 'success' ? '✅' : '⚠️';
+        new bootstrap.Modal(document.getElementById('customAlertModal')).show();
+    }
+
+    function renderDashboard() {
+        const tbody = document.getElementById('dashboardTableBody');
+        tbody.innerHTML = '';
+        const filter = document.getElementById('monthFilter').value;
+
+        employees.forEach(emp => {
+            let stats = { P:0, L:0, A:0, W:0, H:0, S:0 };
+            let empHistory = attendanceHistory.filter(r => String(r.empId) === String(emp.id));
+
+            if (filter !== 'all') {
+                empHistory = empHistory.filter(r => r.date.startsWith(filter));
+            }
+
+            empHistory.forEach(r => { if(stats[r.status] !== undefined) stats[r.status]++; });
+            const sClass = stats.S > 10 ? 'limit-exceeded' : '';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td class="text-start fw-bold">${emp.name}</td>
+                    <td class="bg-p bg-opacity-25">${stats.P}</td>
+                    <td class="bg-l bg-opacity-25">${stats.L}</td>
+                    <td class="bg-a bg-opacity-25">${stats.A}</td>
+                    <td class="bg-w bg-opacity-25">${stats.W}</td>
+                    <td class="bg-h bg-opacity-25">${stats.H}</td>
+                    <td class="${sClass}">${stats.S}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderDetailedView() {
+        const monthInput = document.getElementById('detailMonthInput').value; 
+        if (!monthInput) return;
+
+        const [yearStr, monthStr] = monthInput.split('-');
+        const year = parseInt(yearStr);
+        const month = parseInt(monthStr) - 1; 
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        let headerHtml = '<th class="sticky-col">Employee Name</th>';
+        for(let i=1; i<=daysInMonth; i++) headerHtml += `<th>${i}</th>`;
+        document.getElementById('detailedHeader').innerHTML = `<tr>${headerHtml}</tr>`;
+
+        const tbody = document.getElementById('detailedBody');
+        tbody.innerHTML = '';
+
+        employees.forEach(emp => {
+            let rowHtml = `<tr><td class="sticky-col fw-bold text-start bg-light">${emp.name}</td>`;
+            for(let d=1; d<=daysInMonth; d++) {
+                let dStr = String(d).padStart(2,'0');
+                let fullDate = `${year}-${String(month+1).padStart(2,'0')}-${dStr}`;
+
+                const record = attendanceHistory.find(r => String(r.empId) === String(emp.id) && r.date === fullDate);
+                
+                if (record) {
+                    let bgClass = '';
+                    if(record.status==='P') bgClass='bg-p';
+                    else if(record.status==='L') bgClass='bg-l';
+                    else if(record.status==='A') bgClass='bg-a';
+                    else if(record.status==='W') bgClass='bg-w';
+                    else if(record.status==='H') bgClass='bg-h';
+                    else if(record.status==='S') bgClass='bg-s';
+
+                    let displayNote = record.note;
+                    if (record.status === 'L' && record.note) displayNote = formatTimeAMPM(record.note);
+                    let tooltip = displayNote ? `${record.status}: ${displayNote}` : record.status;
+                    
+                    rowHtml += `<td><span class="status-badge ${bgClass}" title="${tooltip}">${record.status}</span></td>`;
+                } else {
+                    rowHtml += `<td>-</td>`;
+                }
+            }
+            rowHtml += '</tr>';
+            tbody.innerHTML += rowHtml;
+        });
+    }
+
+    function renderDailyEntry() {
+        const tbody = document.getElementById('dailyEntryTableBody');
+        tbody.innerHTML = '';
+
+        employees.forEach(emp => {
+            const currentStatus = dailySessionData[emp.id]?.status || 'P';
+            const currentNote = dailySessionData[emp.id]?.note || '';
+
+            let buttons = '';
+            ['P','L','A','W','H','S'].forEach(code => {
+                let color = code=='P'?'success': code=='L'?'warning': code=='A'?'danger': code=='W'?'info': code=='H'?'secondary':'primary';
+                let checked = currentStatus === code ? 'checked' : '';
+                buttons += `
+                    <input type="radio" class="btn-check" name="status_${emp.id}" id="${code}_${emp.id}" 
+                           value="${code}" ${checked} onclick="handleStatusClick(${emp.id}, '${code}')">
+                    <label class="btn btn-outline-${color}" for="${code}_${emp.id}">${code}</label>
+                `;
+            });
+
+            let displayNoteVal = currentNote;
+            if (currentStatus === 'L' && currentNote) displayNoteVal = formatTimeAMPM(currentNote);
+
+            tbody.innerHTML += `
+                <tr>
+                    <td class="fw-bold">${emp.name}</td>
+                    <td class="text-center"><div class="status-group">${buttons}</div></td>
+                    <td class="text-end">
+                        <span id="note_display_${emp.id}" class="badge bg-light text-dark border p-2">
+                             ${displayNoteVal ? (currentStatus === 'L' ? '🕒 ' : '📝 ') + displayNoteVal : '-'}
+                        </span>
+                    </td>
+                </tr>
+            `;
+            if(!dailySessionData[emp.id]) dailySessionData[emp.id] = { status: 'P', note: '' };
+        });
+    }
+
+    function handleStatusClick(empId, status) {
+        dailySessionData[empId].status = status;
+        if (['A', 'W', 'S', 'L'].includes(status)) {
+            openNoteModal(empId, status);
+        } else {
+            dailySessionData[empId].note = '';
+            updateNoteDisplay(empId);
+        }
+    }
+
+    function openNoteModal(empId, status) {
+        currentModalContext = { empId, status };
+        const modal = new bootstrap.Modal(document.getElementById('noteModal'));
+        const noteInput = document.getElementById('modalNoteInput');
+        const timeInput = document.getElementById('modalTimeInput');
+        
+        noteInput.value = ''; timeInput.value = '';
+        noteInput.classList.add('hidden'); timeInput.classList.add('hidden');
+
+        if (status === 'L') {
+            document.getElementById('noteModalTitle').innerText = "Entry Time";
+            document.getElementById('noteLabel').innerText = "Late Time:";
+            timeInput.classList.remove('hidden');
+            timeInput.value = new Date().toTimeString().slice(0,5);
+        } else {
+            document.getElementById('noteModalTitle').innerText = "Add Details";
+            document.getElementById('noteLabel').innerText = "Reason / Note:";
+            noteInput.classList.remove('hidden');
+        }
+        modal.show();
+    }
+
+    function closeNoteModal() {
+        bootstrap.Modal.getInstance(document.getElementById('noteModal')).hide();
+    }
+
+    function confirmNote() {
+        const { empId, status } = currentModalContext;
+        let val = (status === 'L') ? document.getElementById('modalTimeInput').value : document.getElementById('modalNoteInput').value;
+        if(!val) val = status === 'L' ? 'No time' : 'No details';
+
+        dailySessionData[empId].note = val;
+        updateNoteDisplay(empId);
+        closeNoteModal();
+    }
+
+    function updateNoteDisplay(empId) {
+        const data = dailySessionData[empId];
+        const span = document.getElementById(`note_display_${empId}`);
+        let displayVal = data.note;
+        if(data.status === 'L') displayVal = formatTimeAMPM(data.note);
+        span.innerHTML = data.note ? (data.status === 'L' ? '🕒 ' : '📝 ') + displayVal : '-';
+    }
+
+    function renderEmployeeList() {
+        const tbody = document.getElementById('employeeTableBody');
+        tbody.innerHTML = '';
+        employees.forEach(emp => {
+            tbody.innerHTML += `<tr><td>${emp.id}</td><td>${emp.name}</td><td>${emp.phone}</td><td>${emp.joinDate}</td></tr>`;
+        });
+    }
+
+    function setDefaultDate() {
+        document.getElementById('empJoinDate').valueAsDate = new Date();
+        document.getElementById('empName').value = '';
+        document.getElementById('empPhone').value = '';
+    }
+</script>
+</body>
+</html>

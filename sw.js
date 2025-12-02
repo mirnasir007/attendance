@@ -1,21 +1,21 @@
-{
-  "name": "PFF Attendance Premium",
-  "short_name": "PFF Attendance",
-  "start_url": "index.html",
-  "display": "standalone",
-  "background_color": "#f4f6f9",
-  "theme_color": "#0d6efd",
-  "orientation": "portrait-primary",
-  "icons": [
-    {
-      "src": "logo.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
-  ]
-}
+const CACHE_NAME = 'pff-attendance-v1';
+const urlsToCache = [
+  './',
+  './index.html',
+  './manifest.json',
+  './logo.png'
+];
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
+  );
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => response || fetch(event.request))
+  );
+});

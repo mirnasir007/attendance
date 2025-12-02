@@ -2,15 +2,12 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance PFF Premium</title>
     
-    <!-- PWA & Mobile Setup -->
+    <!-- PWA Setup (Kept for App Install) -->
     <meta name="theme-color" content="#0d6efd">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="application-name" content="PFF Attendance">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -18,16 +15,14 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overscroll-behavior-y: none; }
+        /* Reverted Body Style to Previous Version */
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .nav-link { cursor: pointer; font-weight: 600; }
         .card { border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: none; }
         .header-title { color: #2c3e50; font-weight: bold; }
         
-        /* 100% Width Fix & Mobile Padding */
-        .container-fluid { max-width: 100%; padding-left: 10px !important; padding-right: 10px !important; }
-        @media (min-width: 768px) {
-            .container-fluid { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
-        }
+        /* 100% Width Fix (Previous Style) */
+        .container-fluid { max-width: 100%; }
 
         /* --- LEGEND COLORS --- */
         .badge-p { background-color: #198754; color: white; } 
@@ -60,18 +55,17 @@
         .btn-check:checked + .btn-outline-secondary { background-color: #6c757d; color: white; }
         .btn-check:checked + .btn-outline-primary { background-color: #0d6efd; color: white; }
         
-        .status-group label { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin: 0 1px; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        .status-group label { width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; margin: 0 2px; font-weight: bold; border-radius: 5px; cursor: pointer; }
 
         /* Detailed Table Styling */
-        .detailed-table th, .detailed-table td { min-width: 35px; text-align: center; font-size: 12px; padding: 4px; }
-        .status-badge { display: inline-block; width: 22px; height: 22px; line-height: 22px; border-radius: 50%; font-size: 10px; font-weight: bold; color: #333; }
+        .detailed-table th, .detailed-table td { min-width: 40px; text-align: center; font-size: 13px; padding: 5px; }
+        .status-badge { display: inline-block; width: 25px; height: 25px; line-height: 25px; border-radius: 50%; font-size: 11px; font-weight: bold; color: #333; }
 
         /* UNIVERSAL FREEZE HEADER STYLING */
         .table-scroll-container {
             max-height: 70vh; 
             overflow: auto;
             position: relative;
-            -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
         }
         
         .sticky-header th {
@@ -116,24 +110,22 @@
             background: rgba(255,255,255,0.95); z-index: 9999;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .error-box { max-width: 90%; text-align: center; display: none; }
+        .error-box { max-width: 400px; text-align: center; display: none; }
         
         /* Dashboard Stats Header */
         #selected-stats-display {
-            font-size: 0.85rem;
-            width: 100%;
-            margin-top: 10px;
-            padding: 8px;
+            font-size: 0.9rem;
+            margin-left: 15px;
+            padding: 5px 10px;
             background: #fff;
             border-radius: 5px;
             border: 1px solid #ddd;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
+            display: inline-flex;
+            gap: 10px;
+            align-items: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .stat-item { display: flex; align-items: center; gap: 3px; font-weight: bold; }
+        .stat-item { display: flex; align-items: center; gap: 4px; font-weight: bold; }
 
         /* --- ADMIN SECURITY STYLES --- */
         body:not(.is-admin) .admin-only {
@@ -145,7 +137,7 @@
             filter: grayscale(100%);
         }
         
-        #btnLogin { font-weight: bold; border: 1px solid rgba(255,255,255,0.5); border-radius: 5px; padding: 5px 15px; white-space: nowrap; }
+        #btnLogin { font-weight: bold; border: 1px solid rgba(255,255,255,0.5); border-radius: 5px; padding: 5px 15px; }
         body.is-admin #btnLogin { background-color: #198754; border-color: #198754; content: "Admin Active"; }
     </style>
 </head>
@@ -174,35 +166,45 @@
     </div>
 </div>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-3 shadow-sm">
-    <div class="container-fluid">
+<!-- Reverted Navbar to Previous Style -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
+    <div class="container-fluid px-4">
         <a class="navbar-brand fw-bold" href="#">PFF Premium</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto align-items-center mt-2 mt-lg-0">
-                <li class="nav-item w-100 w-lg-auto"><a class="nav-link active" id="nav-dashboard" onclick="switchTab('dashboard')">Dashboard</a></li>
-                <li class="nav-item w-100 w-lg-auto"><a class="nav-link" id="nav-details" onclick="switchTab('details')">Detailed Report</a></li>
-                <li class="nav-item w-100 w-lg-auto"><a class="nav-link" id="nav-daily" onclick="switchTab('daily')">Daily Entry</a></li>
-                <li class="nav-item w-100 w-lg-auto"><a class="nav-link" id="nav-employees" onclick="switchTab('employees')">Employees</a></li>
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link active" id="nav-dashboard" onclick="switchTab('dashboard')">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" id="nav-details" onclick="switchTab('details')">Detailed Report</a></li>
+                <li class="nav-item"><a class="nav-link" id="nav-daily" onclick="switchTab('daily')">Daily Entry</a></li>
+                <li class="nav-item"><a class="nav-link" id="nav-employees" onclick="switchTab('employees')">Employees</a></li>
                 
                 <!-- LOGIN BUTTON -->
-                <li class="nav-item ms-lg-3 mt-2 mt-lg-0 w-100 w-lg-auto">
-                    <a class="nav-link text-center" id="btnLogin" onclick="initAdminLogin()">Admin Login</a>
+                <li class="nav-item ms-3">
+                    <a class="nav-link text-white" id="btnLogin" onclick="initAdminLogin()">Admin Login</a>
                 </li>
             </ul>
         </div>
     </div>
 </nav>
 
-<div class="container-fluid">
+<div class="container-fluid px-4">
 
     <!-- 1. DASHBOARD SECTION -->
     <div id="dashboard-section">
-        <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
-            <h3 class="header-title mb-0">Attendance Dashboard</h3>
-            <div class="mt-2 mt-md-0">
+        <div class="d-flex flex-wrap align-items-center mb-3">
+            <h3 class="header-title me-2">Attendance Dashboard</h3>
+            <div id="selected-stats-display" class="hidden">
+                <span class="text-primary" id="stat-name">Select Employee</span>:
+                <span class="stat-item"><span class="badge badge-p">P</span> <span id="stat-p">0</span></span>
+                <span class="stat-item"><span class="badge badge-l">L</span> <span id="stat-l">0</span></span>
+                <span class="stat-item"><span class="badge badge-a">A</span> <span id="stat-a">0</span></span>
+                <span class="stat-item"><span class="badge badge-h">H</span> <span id="stat-h">0</span></span>
+                <span class="stat-item"><span class="badge badge-w">W</span> <span id="stat-w">0</span></span>
+                <span class="stat-item"><span class="badge badge-y">Y</span> <span id="stat-y">0</span></span>
+            </div>
+            <div class="ms-auto mt-2 mt-md-0">
                 <select id="monthFilter" class="form-select w-auto" onchange="renderDashboard()">
                     <option value="all" selected>All Time</option>
                     <option value="2025-01">January 2025</option>
@@ -220,28 +222,17 @@
                 </select>
             </div>
         </div>
-
-        <div id="selected-stats-display" class="hidden mb-3">
-            <span class="text-primary w-100 text-center border-bottom pb-1 mb-1" id="stat-name">Select Employee</span>
-            <span class="stat-item"><span class="badge badge-p">P</span> <span id="stat-p">0</span></span>
-            <span class="stat-item"><span class="badge badge-l">L</span> <span id="stat-l">0</span></span>
-            <span class="stat-item"><span class="badge badge-a">A</span> <span id="stat-a">0</span></span>
-            <span class="stat-item"><span class="badge badge-h">H</span> <span id="stat-h">0</span></span>
-            <span class="stat-item"><span class="badge badge-w">W</span> <span id="stat-w">0</span></span>
-            <span class="stat-item"><span class="badge badge-y">Y</span> <span id="stat-y">0</span></span>
-        </div>
         
         <div class="card mb-3">
-            <div class="card-body py-2 text-center">
-                <small class="text-muted d-block d-md-inline"><strong>Legend:</strong></small>
-                <div class="d-flex flex-wrap justify-content-center gap-2 mt-1">
-                    <span class="badge badge-p">P</span> Presents 
-                    <span class="badge badge-l">L</span> Late
-                    <span class="badge badge-a">A</span> Absence
-                    <span class="badge badge-h">H</span> Half Day
-                    <span class="badge badge-w">W</span> Weekend
-                    <span class="badge badge-y">Y</span> Yearly
-                </div>
+            <div class="card-body py-2">
+                <small class="text-muted"><strong>Legend:</strong> 
+                <span class="badge badge-p">P</span> Presents | 
+                <span class="badge badge-l">L</span> Late-time | 
+                <span class="badge badge-a">A</span> Absence | 
+                <span class="badge badge-h">H</span> Half Day Working | 
+                <span class="badge badge-w">W</span> Weekend | 
+                <span class="badge badge-y">Y</span> Yearly Holiday
+                </small>
             </div>
         </div>
 
@@ -251,13 +242,13 @@
                     <table class="table table-bordered text-center align-middle w-100 mb-0">
                         <thead class="table-dark sticky-header">
                             <tr>
-                                <th>Name</th>
-                                <th>P</th>
-                                <th>L</th>
-                                <th>A</th>
-                                <th>H</th>
-                                <th>W</th>
-                                <th>Y</th>
+                                <th>Employee Name</th>
+                                <th>Presents (P)</th>
+                                <th>Late (L)</th>
+                                <th>Absence (A)</th>
+                                <th>Half Day (H)</th>
+                                <th>Weekend (W)</th>
+                                <th>Yearly (Y)</th>
                             </tr>
                         </thead>
                         <tbody id="dashboardTableBody"></tbody>
@@ -269,23 +260,24 @@
 
     <!-- 2. DETAILED REPORT SECTION -->
     <div id="details-section" class="hidden">
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-            <h3 class="header-title">Monthly Report</h3>
-            <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
-                <label class="fw-bold">Month:</label>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="header-title">Monthly Detailed Report</h3>
+            <div class="d-flex align-items-center gap-2">
+                <label class="fw-bold">Select Month:</label>
                 <input type="month" id="detailMonthInput" class="form-control form-control-sm w-auto" onchange="renderDetailedView()">
             </div>
         </div>
 
+        <!-- LEGEND HERE -->
         <div class="card mb-3">
-            <div class="card-body py-2 text-center">
+            <div class="card-body py-2">
                 <small class="text-muted"><strong>Legend:</strong> 
-                <span class="badge badge-p">P</span> P | 
-                <span class="badge badge-l">L</span> L | 
-                <span class="badge badge-a">A</span> A | 
-                <span class="badge badge-h">H</span> H | 
-                <span class="badge badge-w">W</span> W | 
-                <span class="badge badge-y">Y</span> Y
+                <span class="badge badge-p">P</span> Presents | 
+                <span class="badge badge-l">L</span> Late-time | 
+                <span class="badge badge-a">A</span> Absence | 
+                <span class="badge badge-h">H</span> Half Day Working | 
+                <span class="badge badge-w">W</span> Weekend | 
+                <span class="badge badge-y">Y</span> Yearly Holiday
                 </small>
             </div>
         </div>
@@ -299,7 +291,7 @@
                     </table>
                 </div>
                 <div class="mt-2 text-end p-2">
-                    <span class="badge bg-info text-dark">Tip: Click cells for notes</span>
+                    <span class="badge bg-info text-dark">Tip: Hover on cells for notes & time</span>
                 </div>
             </div>
         </div>
@@ -307,22 +299,33 @@
 
     <!-- 3. DAILY ENTRY SECTION -->
     <div id="daily-section" class="hidden">
-        <div class="mb-3">
-            <h3 class="header-title">Daily Entry</h3>
-            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mt-2">
-                <div>
-                    <span class="text-muted small" id="displayDateStr">Loading...</span>
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="header-title">Daily Attendance Entry</h3>
+                <p class="text-muted mb-0" id="displayDateStr">Loading...</p>
+            </div>
+            
+            <div class="d-flex gap-2 align-items-center">
+                <div class="input-group w-auto">
+                    <span class="input-group-text">Date:</span>
+                    <input type="date" id="attendanceDate" class="form-control" onchange="updateDisplayDate()">
                 </div>
-                <div class="d-flex gap-2">
-                    <input type="date" id="attendanceDate" class="form-control w-auto" onchange="updateDisplayDate()">
-                    <button type="button" class="btn btn-primary admin-only" onclick="saveAttendance()">Save</button>
-                </div>
+                <button type="button" class="btn btn-primary admin-only" onclick="saveAttendance()">
+                    Save Today's Attendance
+                </button>
             </div>
         </div>
 
         <div class="card mb-3">
-            <div class="card-body py-2 text-center">
-                <small class="text-muted">Status: P-Present, L-Late, A-Absence, H-Half Day, W-Weekend, Y-Yearly</small>
+            <div class="card-body py-2">
+                <small class="text-muted"><strong>Legend:</strong> 
+                <span class="badge badge-p">P</span> Presents | 
+                <span class="badge badge-l">L</span> Late-time | 
+                <span class="badge badge-a">A</span> Absence | 
+                <span class="badge badge-h">H</span> Half Day Working | 
+                <span class="badge badge-w">W</span> Weekend | 
+                <span class="badge badge-y">Y</span> Yearly Holiday
+                </small>
             </div>
         </div>
 
@@ -333,8 +336,8 @@
                         <table class="table table-striped align-middle w-100 mb-0">
                             <thead class="table-light sticky-header">
                                 <tr>
-                                    <th>Name</th>
-                                    <th class="text-center">Status</th>
+                                    <th>Employee Name</th>
+                                    <th class="text-center">Status Selection</th>
                                 </tr>
                             </thead>
                             <tbody id="dailyEntryTableBody"></tbody>
@@ -348,9 +351,9 @@
     <!-- 4. EMPLOYEES SECTION -->
     <div id="employees-section" class="hidden">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3 class="header-title">Employees</h3>
+            <h3 class="header-title">Employee List</h3>
             <button class="btn btn-success admin-only" data-bs-toggle="modal" data-bs-target="#addEmployeeModal" onclick="setDefaultDate()">
-                + New
+                + New Employee
             </button>
         </div>
         <div class="card">
@@ -362,8 +365,8 @@
                                 <th>ID</th>
                                 <th>Name</th>
                                 <th>Phone</th>
-                                <th>Joined</th>
-                                <th>Action</th>
+                                <th>Join Date</th>
+                                <th>Status / Action</th>
                             </tr>
                         </thead>
                         <tbody id="employeeTableBody"></tbody>
@@ -387,6 +390,7 @@
     </div>
 </div>
 
+<!-- ADMIN LOGIN MODAL -->
 <div class="modal fade" id="adminLoginModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content">
@@ -426,7 +430,7 @@
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white py-2">
-                <h6 class="modal-title fw-bold">Resignation</h6>
+                <h6 class="modal-title fw-bold">Employee Resignation</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -435,7 +439,7 @@
                 <input type="date" id="resignDateInput" class="form-control form-control-sm">
             </div>
             <div class="modal-footer py-1">
-                <button type="button" class="btn btn-danger btn-sm w-100" onclick="confirmResign()">Confirm</button>
+                <button type="button" class="btn btn-danger btn-sm w-100" onclick="confirmResign()">Confirm Resignation</button>
             </div>
         </div>
     </div>
@@ -445,7 +449,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">New Employee</h5>
+                <h5 class="modal-title">Add New Employee</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -474,42 +478,38 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+    // --- API CONFIG ---
+    // Update this with the NEW URL after deploying code.gs
     const API_URL = "https://script.google.com/macros/s/AKfycbzOawB-mS6LIojPJ5RJLJpZKVFYOvd5eLrLIi9PHsjX-OdCexchBmhfMSTJXgHwMgvc/exec";
     
+    // --- DATA STORE ---
     let employees = [];
     let attendanceHistory = [];
     let dailySessionData = {}; 
     let currentModalContext = { empId: null, status: null };
     let resignContext = { empId: null };
 
-    // --- PWA Service Worker Registration ---
+    // --- PWA REGISTRATION ---
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('Service Worker registered'))
                 .catch(err => console.log('Service Worker failed', err));
         });
     }
 
-    // --- NAVBAR AUTO CLOSE (MOBILE FIX) ---
+    // --- NAVBAR AUTO CLOSE (Kept for functionality) ---
     function closeNavbarOnMobile() {
         const navBar = document.getElementById('navbarNav');
-        // Check if navbar is open (has 'show' class)
         if (navBar.classList.contains('show')) {
             const bsCollapse = bootstrap.Collapse.getInstance(navBar);
-            if(bsCollapse) {
-                bsCollapse.hide();
-            } else {
-                new bootstrap.Collapse(navBar).hide();
-            }
+            if(bsCollapse) bsCollapse.hide();
+            else new bootstrap.Collapse(navBar).hide();
         }
     }
 
-    // --- ADMIN SECURITY LOGIC ---
+    // --- SECURE ADMIN LOGIN LOGIC ---
     function initAdminLogin() {
-        // Auto close nav first
         closeNavbarOnMobile();
-
         if(document.body.classList.contains('is-admin')) {
             document.body.classList.remove('is-admin');
             document.getElementById('btnLogin').innerText = "Admin Login";
@@ -596,6 +596,7 @@
         }
     }
 
+    // --- UTILS ---
     function formatDatePretty(dateStr) {
         if (!dateStr) return "";
         try {
@@ -631,8 +632,8 @@
 
     function loadDemoData() {
         employees = [
-            { id: 1, name: "Demo 1", phone: "017...", joinDate: "2023-01-01", leaveDate: "" },
-            { id: 2, name: "Demo 2", phone: "018...", joinDate: "2023-02-01", leaveDate: "2024-01-01" }
+            { id: 1, name: "Demo User 1", phone: "017...", joinDate: "2023-01-01", leaveDate: "" },
+            { id: 2, name: "Demo User 2 (Left)", phone: "018...", joinDate: "2023-02-01", leaveDate: "2024-01-01" }
         ];
         attendanceHistory = [];
         updateDisplayDate();
@@ -670,7 +671,7 @@
     }
 
     function openResignModal(id, name) {
-        closeNavbarOnMobile(); // Fix mobile menu overlay
+        closeNavbarOnMobile(); 
         resignContext = { empId: id };
         document.getElementById('resignEmpName').innerText = name;
         new bootstrap.Modal(document.getElementById('resignModal')).show();
@@ -779,7 +780,6 @@
     }
 
     function switchTab(tab) {
-        // CLOSE NAVBAR (Mobile Fix)
         closeNavbarOnMobile();
 
         document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
@@ -801,7 +801,7 @@
         new bootstrap.Modal(document.getElementById('customAlertModal')).show();
     }
 
-    // --- DASHBOARD ---
+    // --- DASHBOARD UPDATE ---
     function renderDashboard() {
         const tbody = document.getElementById('dashboardTableBody');
         tbody.innerHTML = '';
@@ -824,7 +824,7 @@
 
             tbody.innerHTML += `
                 <tr id="dash-row-${emp.id}">
-                    <td class="text-start clickable-name" 
+                    <td class="text-start fw-bold clickable-name" 
                         onclick='showTopStats("${emp.name}", ${jsonStats}, ${emp.id})'>
                         ${nameDisplay}
                     </td>
@@ -863,7 +863,7 @@
         const month = parseInt(monthStr) - 1; 
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         
-        let headerHtml = '<th class="sticky-col">Name</th>';
+        let headerHtml = '<th class="sticky-col">Employee Name</th>';
         for(let i=1; i<=daysInMonth; i++) headerHtml += `<th>${i}</th>`;
         document.getElementById('detailedHeader').innerHTML = `<tr>${headerHtml}</tr>`;
 
@@ -871,7 +871,7 @@
         tbody.innerHTML = '';
 
         employees.forEach(emp => {
-            const nameDisplay = emp.leaveDate ? `${emp.name} (L)` : emp.name;
+            const nameDisplay = emp.leaveDate ? `${emp.name} (Left)` : emp.name;
             let rowHtml = `<tr><td class="sticky-col fw-bold text-start bg-light">${nameDisplay}</td>`;
             
             for(let d=1; d<=daysInMonth; d++) {
@@ -916,7 +916,7 @@
         const activeEmployees = getActiveEmployeesForDate(selectedDate);
 
         if(activeEmployees.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">No active employees.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">No active employees for this date.</td></tr>';
             return;
         }
 
@@ -993,13 +993,15 @@
         tbody.innerHTML = '';
         employees.forEach(emp => {
             let statusBtn = '';
+            // Pretty Date for Join Date
             const prettyJoinDate = formatDatePretty(emp.joinDate);
 
             if(emp.leaveDate) {
+                // Pretty Date for Leave Date
                 const prettyLeaveDate = formatDatePretty(emp.leaveDate);
                 statusBtn = `<span class="badge bg-secondary">Left: ${prettyLeaveDate}</span>`;
             } else {
-                statusBtn = `<button class="btn btn-sm btn-outline-danger admin-only" onclick="openResignModal(${emp.id}, '${emp.name}')">Resign</button>`;
+                statusBtn = `<button class="btn btn-sm btn-outline-danger admin-only" onclick="openResignModal(${emp.id}, '${emp.name}')">Resign / Left</button>`;
             }
             tbody.innerHTML += `<tr>
                 <td>${emp.id}</td>

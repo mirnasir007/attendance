@@ -16,33 +16,42 @@
         /* 100% Width Fix */
         .container-fluid { max-width: 100%; }
 
-        /* Custom Badge Colors for Dashboard */
-        .badge-p { background-color: #198754; color: white; } /* Green - Working */
-        .badge-l { background-color: #ffc107; color: black; } /* Yellow - Late */
-        .badge-a { background-color: #dc3545; color: white; } /* Red - Absence */
-        .badge-w { background-color: #0dcaf0; color: black; } /* Cyan - Half Day */
-        .badge-h { background-color: #6c757d; color: white; } /* Gray - Holiday */
-        .badge-s { background-color: #0d6efd; color: white; } /* Blue - Yearly */
-
-        /* Light Backgrounds for Detailed View (So text is readable) */
-        .bg-p { background-color: #d4edda; color: #155724; } 
-        .bg-l { background-color: #fff3cd; color: #856404; } 
-        .bg-a { background-color: #f8d7da; color: #721c24; } 
-        .bg-w { background-color: #d1ecf1; color: #0c5460; } 
-        .bg-h { background-color: #e2e3e5; color: #383d41; } 
-        .bg-s { background-color: #cce5ff; color: #004085; } 
+        /* --- NEW LEGEND COLORS --- */
+        /* P - Present (Green) */
+        .badge-p { background-color: #198754; color: white; } 
+        .bg-p { background-color: #d4edda; color: #155724; }
+        
+        /* L - Late (Yellow) */
+        .badge-l { background-color: #ffc107; color: black; } 
+        .bg-l { background-color: #fff3cd; color: #856404; }
+        
+        /* A - Absence (Red) */
+        .badge-a { background-color: #dc3545; color: white; } 
+        .bg-a { background-color: #f8d7da; color: #721c24; }
+        
+        /* H - Half Day Working (Cyan - Was Old Half Day) */
+        .badge-h { background-color: #0dcaf0; color: black; } 
+        .bg-h { background-color: #d1ecf1; color: #0c5460; }
+        
+        /* W - Weekend (Gray - Was Old Holiday) */
+        .badge-w { background-color: #6c757d; color: white; } 
+        .bg-w { background-color: #e2e3e5; color: #383d41; }
+        
+        /* Y - Yearly Holiday (Blue - Was Old S) */
+        .badge-y { background-color: #0d6efd; color: white; } 
+        .bg-y { background-color: #cce5ff; color: #004085; }
 
         .limit-exceeded { border: 2px solid red; }
         .hidden { display: none !important; }
         .text-muted-row { opacity: 0.6; background-color: #f0f0f0; }
         
-        /* Radio Button Styling */
-        .btn-check:checked + .btn-outline-success { background-color: #198754; color: white; }
-        .btn-check:checked + .btn-outline-warning { background-color: #ffc107; color: black; }
-        .btn-check:checked + .btn-outline-danger { background-color: #dc3545; color: white; }
-        .btn-check:checked + .btn-outline-info { background-color: #0dcaf0; color: black; }
-        .btn-check:checked + .btn-outline-secondary { background-color: #6c757d; color: white; }
-        .btn-check:checked + .btn-outline-primary { background-color: #0d6efd; color: white; }
+        /* Radio Button Styling (Updated for New Legend) */
+        .btn-check:checked + .btn-outline-success { background-color: #198754; color: white; } /* P */
+        .btn-check:checked + .btn-outline-warning { background-color: #ffc107; color: black; } /* L */
+        .btn-check:checked + .btn-outline-danger { background-color: #dc3545; color: white; } /* A */
+        .btn-check:checked + .btn-outline-info { background-color: #0dcaf0; color: black; }   /* H */
+        .btn-check:checked + .btn-outline-secondary { background-color: #6c757d; color: white; } /* W */
+        .btn-check:checked + .btn-outline-primary { background-color: #0d6efd; color: white; }   /* Y */
         
         .status-group label { width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; margin: 0 2px; font-weight: bold; border-radius: 5px; cursor: pointer; }
 
@@ -167,15 +176,15 @@
         <div class="d-flex flex-wrap align-items-center mb-3">
             <h3 class="header-title me-2">Attendance Dashboard</h3>
             
-            <!-- TRICK STATS DISPLAY -->
+            <!-- TRICK STATS DISPLAY (Updated Codes) -->
             <div id="selected-stats-display" class="hidden">
                 <span class="text-primary" id="stat-name">Select Employee</span>:
                 <span class="stat-item"><span class="badge badge-p">P</span> <span id="stat-p">0</span></span>
                 <span class="stat-item"><span class="badge badge-l">L</span> <span id="stat-l">0</span></span>
                 <span class="stat-item"><span class="badge badge-a">A</span> <span id="stat-a">0</span></span>
-                <span class="stat-item"><span class="badge badge-w">W</span> <span id="stat-w">0</span></span>
                 <span class="stat-item"><span class="badge badge-h">H</span> <span id="stat-h">0</span></span>
-                <span class="stat-item"><span class="badge badge-s">S</span> <span id="stat-s">0</span></span>
+                <span class="stat-item"><span class="badge badge-w">W</span> <span id="stat-w">0</span></span>
+                <span class="stat-item"><span class="badge badge-y">Y</span> <span id="stat-y">0</span></span>
             </div>
 
             <div class="ms-auto mt-2 mt-md-0">
@@ -197,19 +206,33 @@
             </div>
         </div>
 
+        <!-- NEW LEGEND CARD (Dashboard) -->
+        <div class="card mb-3">
+            <div class="card-body py-2">
+                <small class="text-muted"><strong>Legend:</strong> 
+                <span class="badge badge-p">P</span> Presents | 
+                <span class="badge badge-l">L</span> Late-time | 
+                <span class="badge badge-a">A</span> Absence | 
+                <span class="badge badge-h">H</span> Half Day Working | 
+                <span class="badge badge-w">W</span> Weekend | 
+                <span class="badge badge-y">Y</span> Yearly Holiday
+                </small>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-body p-0">
                 <div class="table-scroll-container">
                     <table class="table table-bordered text-center align-middle w-100 mb-0">
                         <thead class="table-dark sticky-header">
                             <tr>
-                                <th>Employee Name</th>
-                                <th>Working (P)</th>
+                                <th>Employee Name (Click for Stats)</th>
+                                <th>Presents (P)</th>
                                 <th>Late (L)</th>
                                 <th>Absence (A)</th>
-                                <th>Half Day (W)</th>
-                                <th>Holiday (H)</th>
-                                <th>Yearly (S)</th>
+                                <th>Half Hour (H)</th>
+                                <th>Weekend (W)</th>
+                                <th>Yearly (Y)</th>
                             </tr>
                         </thead>
                         <tbody id="dashboardTableBody"></tbody>
@@ -259,6 +282,20 @@
                 <button type="button" class="btn btn-primary" onclick="saveAttendance()">
                     Save Today's Attendance
                 </button>
+            </div>
+        </div>
+
+        <!-- NEW LEGEND CARD (Daily Entry - Added Here) -->
+        <div class="card mb-3">
+            <div class="card-body py-2">
+                <small class="text-muted"><strong>Legend:</strong> 
+                <span class="badge badge-p">P</span> Presents | 
+                <span class="badge badge-l">L</span> Late-time | 
+                <span class="badge badge-a">A</span> Absence | 
+                <span class="badge badge-h">H</span> Half Day Working | 
+                <span class="badge badge-w">W</span> Weekend | 
+                <span class="badge badge-y">Y</span> Yearly Holiday
+                </small>
             </div>
         </div>
 
@@ -562,10 +599,7 @@
             attendanceHistory = attendanceHistory.filter(r => r.date !== date); 
             records.forEach(r => attendanceHistory.push(r));
             showAlert("Saved!", "Attendance synced.");
-            
-            // KEY CHANGE: Re-load the view for the current date to reflect saved data
             updateDisplayDate();
-            
             showLoading(false);
         })
         .catch(err => { showLoading(false); alert("Error saving."); });
@@ -582,7 +616,6 @@
             document.getElementById('displayDateStr').innerText = dateVal.toLocaleDateString('en-GB', options);
         }
         
-        // KEY CHANGE: Check history for existing data before resetting
         dailySessionData = {};
         
         employees.forEach(emp => {
@@ -643,7 +676,8 @@
         statsDisplay.classList.add('hidden'); // Hide top stats initially
 
         employees.forEach((emp, index) => {
-            let stats = { P:0, L:0, A:0, W:0, H:0, S:0 };
+            // Updated Stats Counter for New Legend
+            let stats = { P:0, L:0, A:0, H:0, W:0, Y:0 };
             let empHistory = attendanceHistory.filter(r => String(r.empId) === String(emp.id));
 
             if (filter !== 'all') {
@@ -665,9 +699,9 @@
                     <td><span class="badge badge-p rounded-pill">${stats.P}</span></td>
                     <td><span class="badge badge-l rounded-pill">${stats.L}</span></td>
                     <td><span class="badge badge-a rounded-pill">${stats.A}</span></td>
-                    <td><span class="badge badge-w rounded-pill">${stats.W}</span></td>
                     <td><span class="badge badge-h rounded-pill">${stats.H}</span></td>
-                    <td><span class="badge badge-s rounded-pill">${stats.S}</span></td>
+                    <td><span class="badge badge-w rounded-pill">${stats.W}</span></td>
+                    <td><span class="badge badge-y rounded-pill">${stats.Y}</span></td>
                 </tr>
             `;
         });
@@ -681,9 +715,9 @@
         document.getElementById('stat-p').innerText = stats.P;
         document.getElementById('stat-l').innerText = stats.L;
         document.getElementById('stat-a').innerText = stats.A;
-        document.getElementById('stat-w').innerText = stats.W;
         document.getElementById('stat-h').innerText = stats.H;
-        document.getElementById('stat-s').innerText = stats.S;
+        document.getElementById('stat-w').innerText = stats.W;
+        document.getElementById('stat-y').innerText = stats.Y;
         
         document.getElementById('selected-stats-display').classList.remove('hidden');
     }
@@ -724,9 +758,9 @@
                     if(record.status==='P') bgClass='bg-p';
                     else if(record.status==='L') bgClass='bg-l';
                     else if(record.status==='A') bgClass='bg-a';
-                    else if(record.status==='W') bgClass='bg-w';
-                    else if(record.status==='H') bgClass='bg-h';
-                    else if(record.status==='S') bgClass='bg-s';
+                    else if(record.status==='H') bgClass='bg-h'; // New H (Half Hour - Cyan)
+                    else if(record.status==='W') bgClass='bg-w'; // New W (Weekend - Gray)
+                    else if(record.status==='Y') bgClass='bg-y'; // New Y (Yearly - Blue)
 
                     let displayNote = record.note;
                     if (record.status === 'L' && record.note) displayNote = formatTimeAMPM(record.note);
@@ -758,8 +792,9 @@
             const currentStatus = dailySessionData[emp.id]?.status || 'P';
             
             let buttons = '';
-            ['P','L','A','W','H','S'].forEach(code => {
-                let color = code=='P'?'success': code=='L'?'warning': code=='A'?'danger': code=='W'?'info': code=='H'?'secondary':'primary';
+            // Updated Loop for New Legend
+            ['P','L','A','H','W','Y'].forEach(code => {
+                let color = code=='P'?'success': code=='L'?'warning': code=='A'?'danger': code=='H'?'info': code=='W'?'secondary':'primary';
                 let checked = currentStatus === code ? 'checked' : '';
                 buttons += `
                     <input type="radio" class="btn-check" name="status_${emp.id}" id="${code}_${emp.id}" 
@@ -780,7 +815,10 @@
 
     function handleStatusClick(empId, status) {
         dailySessionData[empId].status = status;
-        if (['A', 'W', 'S', 'L'].includes(status)) {
+        // Trigger Note/Time modal for relevant statuses
+        // L=Late (Time), A=Absence, H=Half Hour, Y=Yearly (Note)
+        // W=Weekend, P=Present (No Note)
+        if (['L', 'A', 'H', 'Y'].includes(status)) {
             openNoteModal(empId, status);
         } else {
             dailySessionData[empId].note = '';

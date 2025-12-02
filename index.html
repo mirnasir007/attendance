@@ -16,28 +16,22 @@
         /* 100% Width Fix */
         .container-fluid { max-width: 100%; }
 
-        /* --- NEW LEGEND COLORS --- */
-        /* P - Present (Green) */
+        /* --- LEGEND COLORS --- */
         .badge-p { background-color: #198754; color: white; } 
         .bg-p { background-color: #d4edda; color: #155724; }
         
-        /* L - Late (Yellow) */
         .badge-l { background-color: #ffc107; color: black; } 
         .bg-l { background-color: #fff3cd; color: #856404; }
         
-        /* A - Absence (Red) */
         .badge-a { background-color: #dc3545; color: white; } 
         .bg-a { background-color: #f8d7da; color: #721c24; }
         
-        /* H - Half Day Working (Cyan - Was Old Half Day) */
         .badge-h { background-color: #0dcaf0; color: black; } 
         .bg-h { background-color: #d1ecf1; color: #0c5460; }
         
-        /* W - Weekend (Gray - Was Old Holiday) */
         .badge-w { background-color: #6c757d; color: white; } 
         .bg-w { background-color: #e2e3e5; color: #383d41; }
         
-        /* Y - Yearly Holiday (Blue - Was Old S) */
         .badge-y { background-color: #0d6efd; color: white; } 
         .bg-y { background-color: #cce5ff; color: #004085; }
 
@@ -45,13 +39,13 @@
         .hidden { display: none !important; }
         .text-muted-row { opacity: 0.6; background-color: #f0f0f0; }
         
-        /* Radio Button Styling (Updated for New Legend) */
-        .btn-check:checked + .btn-outline-success { background-color: #198754; color: white; } /* P */
-        .btn-check:checked + .btn-outline-warning { background-color: #ffc107; color: black; } /* L */
-        .btn-check:checked + .btn-outline-danger { background-color: #dc3545; color: white; } /* A */
-        .btn-check:checked + .btn-outline-info { background-color: #0dcaf0; color: black; }   /* H */
-        .btn-check:checked + .btn-outline-secondary { background-color: #6c757d; color: white; } /* W */
-        .btn-check:checked + .btn-outline-primary { background-color: #0d6efd; color: white; }   /* Y */
+        /* Radio Button Styling */
+        .btn-check:checked + .btn-outline-success { background-color: #198754; color: white; }
+        .btn-check:checked + .btn-outline-warning { background-color: #ffc107; color: black; }
+        .btn-check:checked + .btn-outline-danger { background-color: #dc3545; color: white; }
+        .btn-check:checked + .btn-outline-info { background-color: #0dcaf0; color: black; }
+        .btn-check:checked + .btn-outline-secondary { background-color: #6c757d; color: white; }
+        .btn-check:checked + .btn-outline-primary { background-color: #0d6efd; color: white; }
         
         .status-group label { width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; margin: 0 2px; font-weight: bold; border-radius: 5px; cursor: pointer; }
 
@@ -69,13 +63,12 @@
         .sticky-header th {
             position: sticky;
             top: 0;
-            background-color: #212529 !important; /* Forces dark header background */
+            background-color: #212529 !important;
             color: white;
             z-index: 20;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* Fix for Detailed Report's Left Sticky Column */
         .sticky-col { 
             position: sticky; 
             left: 0; 
@@ -91,16 +84,16 @@
         /* Clickable Name Styling */
         .clickable-name {
             cursor: pointer;
-            color: #0d6efd; /* Bootstrap Primary Blue */
+            color: #0d6efd; 
             text-decoration: none;
             transition: all 0.2s;
         }
         .clickable-name:hover {
             text-decoration: underline;
-            background-color: #f1f8ff; /* Light blue highlight on hover */
+            background-color: #f1f8ff;
         }
         .selected-row-highlight {
-            background-color: #fff3cd !important; /* Yellowish highlight for selected row */
+            background-color: #fff3cd !important;
         }
 
         /* Loading Overlay */
@@ -125,6 +118,19 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .stat-item { display: flex; align-items: center; gap: 4px; font-weight: bold; }
+
+        /* --- ADMIN SECURITY STYLES --- */
+        body:not(.is-admin) .admin-only {
+            display: none !important;
+        }
+        body:not(.is-admin) .admin-lock {
+            pointer-events: none;
+            opacity: 0.5;
+            filter: grayscale(100%);
+        }
+        
+        #btnLogin { font-weight: bold; border: 1px solid rgba(255,255,255,0.5); border-radius: 5px; padding: 5px 15px; }
+        body.is-admin #btnLogin { background-color: #198754; border-color: #198754; content: "Admin Active"; }
     </style>
 </head>
 <body>
@@ -159,11 +165,16 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
+            <ul class="navbar-nav ms-auto align-items-center">
                 <li class="nav-item"><a class="nav-link active" id="nav-dashboard" onclick="switchTab('dashboard')">Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link" id="nav-details" onclick="switchTab('details')">Detailed Report</a></li>
                 <li class="nav-item"><a class="nav-link" id="nav-daily" onclick="switchTab('daily')">Daily Entry</a></li>
                 <li class="nav-item"><a class="nav-link" id="nav-employees" onclick="switchTab('employees')">Employees</a></li>
+                
+                <!-- LOGIN BUTTON -->
+                <li class="nav-item ms-3">
+                    <a class="nav-link text-white" id="btnLogin" onclick="initAdminLogin()">Admin Login</a>
+                </li>
             </ul>
         </div>
     </div>
@@ -175,8 +186,6 @@
     <div id="dashboard-section">
         <div class="d-flex flex-wrap align-items-center mb-3">
             <h3 class="header-title me-2">Attendance Dashboard</h3>
-            
-            <!-- TRICK STATS DISPLAY (Updated Codes) -->
             <div id="selected-stats-display" class="hidden">
                 <span class="text-primary" id="stat-name">Select Employee</span>:
                 <span class="stat-item"><span class="badge badge-p">P</span> <span id="stat-p">0</span></span>
@@ -186,7 +195,6 @@
                 <span class="stat-item"><span class="badge badge-w">W</span> <span id="stat-w">0</span></span>
                 <span class="stat-item"><span class="badge badge-y">Y</span> <span id="stat-y">0</span></span>
             </div>
-
             <div class="ms-auto mt-2 mt-md-0">
                 <select id="monthFilter" class="form-select w-auto" onchange="renderDashboard()">
                     <option value="all" selected>All Time</option>
@@ -205,8 +213,7 @@
                 </select>
             </div>
         </div>
-
-        <!-- NEW LEGEND CARD (Dashboard) -->
+        
         <div class="card mb-3">
             <div class="card-body py-2">
                 <small class="text-muted"><strong>Legend:</strong> 
@@ -226,11 +233,12 @@
                     <table class="table table-bordered text-center align-middle w-100 mb-0">
                         <thead class="table-dark sticky-header">
                             <tr>
-                                <th>Employee Name (Click for Stats)</th>
+                                <!-- Updated Header Text -->
+                                <th>Employee Name</th>
                                 <th>Presents (P)</th>
                                 <th>Late (L)</th>
                                 <th>Absence (A)</th>
-                                <th>Half Hour (H)</th>
+                                <th>Half Day (H)</th>
                                 <th>Weekend (W)</th>
                                 <th>Yearly (Y)</th>
                             </tr>
@@ -251,6 +259,21 @@
                 <input type="month" id="detailMonthInput" class="form-control form-control-sm w-auto" onchange="renderDetailedView()">
             </div>
         </div>
+
+        <!-- ADDED LEGEND HERE TOO -->
+        <div class="card mb-3">
+            <div class="card-body py-2">
+                <small class="text-muted"><strong>Legend:</strong> 
+                <span class="badge badge-p">P</span> Presents | 
+                <span class="badge badge-l">L</span> Late-time | 
+                <span class="badge badge-a">A</span> Absence | 
+                <span class="badge badge-h">H</span> Half Day Working | 
+                <span class="badge badge-w">W</span> Weekend | 
+                <span class="badge badge-y">Y</span> Yearly Holiday
+                </small>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-body p-0">
                 <div class="table-scroll-container">
@@ -279,13 +302,12 @@
                     <span class="input-group-text">Date:</span>
                     <input type="date" id="attendanceDate" class="form-control" onchange="updateDisplayDate()">
                 </div>
-                <button type="button" class="btn btn-primary" onclick="saveAttendance()">
+                <button type="button" class="btn btn-primary admin-only" onclick="saveAttendance()">
                     Save Today's Attendance
                 </button>
             </div>
         </div>
 
-        <!-- NEW LEGEND CARD (Daily Entry - Added Here) -->
         <div class="card mb-3">
             <div class="card-body py-2">
                 <small class="text-muted"><strong>Legend:</strong> 
@@ -322,7 +344,7 @@
     <div id="employees-section" class="hidden">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3 class="header-title">Employee List</h3>
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addEmployeeModal" onclick="setDefaultDate()">
+            <button class="btn btn-success admin-only" data-bs-toggle="modal" data-bs-target="#addEmployeeModal" onclick="setDefaultDate()">
                 + New Employee
             </button>
         </div>
@@ -356,6 +378,23 @@
             <h4 id="alertTitle" class="fw-bold">Success</h4>
             <p id="alertMsg" class="text-muted mb-4">Operation completed.</p>
             <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">OK</button>
+        </div>
+    </div>
+</div>
+
+<!-- NEW: ADMIN LOGIN MODAL -->
+<div class="modal fade" id="adminLoginModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white py-2">
+                <h6 class="modal-title fw-bold">Admin Access</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label small">Enter Password:</label>
+                <input type="password" id="adminPasswordInput" class="form-control mb-3" placeholder="****">
+                <button class="btn btn-primary w-100" onclick="submitAdminLogin()">Login</button>
+            </div>
         </div>
     </div>
 </div>
@@ -431,16 +470,44 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // --- API CONFIG ---
-    // IMPORTANT: Use your latest deployment URL here
     const API_URL = "https://script.google.com/macros/s/AKfycbzOawB-mS6LIojPJ5RJLJpZKVFYOvd5eLrLIi9PHsjX-OdCexchBmhfMSTJXgHwMgvc/exec";
     
-    // --- DATA STORE ---
     let employees = [];
     let attendanceHistory = [];
     let dailySessionData = {}; 
     let currentModalContext = { empId: null, status: null };
     let resignContext = { empId: null };
+
+    // --- ADMIN SECURITY LOGIC UPDATED ---
+    function initAdminLogin() {
+        if(document.body.classList.contains('is-admin')) {
+            // Logout Logic
+            document.body.classList.remove('is-admin');
+            document.getElementById('btnLogin').innerText = "Admin Login";
+            localStorage.removeItem("isAdmin");
+            // Changed from alert() to showAlert()
+            showAlert("Logged Out", "Admin mode deactivated.", "success");
+        } else {
+            // Open Modal Logic
+            document.getElementById('adminPasswordInput').value = '';
+            new bootstrap.Modal(document.getElementById('adminLoginModal')).show();
+        }
+    }
+
+    function submitAdminLogin() {
+        const pass = document.getElementById('adminPasswordInput').value;
+        if(pass === "61983") { 
+            document.body.classList.add('is-admin');
+            document.getElementById('btnLogin').innerText = "Logout (Admin)";
+            localStorage.setItem("isAdmin", "true");
+            
+            bootstrap.Modal.getInstance(document.getElementById('adminLoginModal')).hide();
+            showAlert("Success", "Admin Mode Activated");
+        } else {
+            // Using browser alert for wrong password is fine or can change to showAlert
+            alert("Wrong Password!");
+        }
+    }
 
     // --- INITIALIZATION ---
     window.onload = function() {
@@ -452,6 +519,18 @@
         const yyyy = today.getFullYear();
         const mm = String(today.getMonth() + 1).padStart(2, '0');
         document.getElementById('detailMonthInput').value = `${yyyy}-${mm}`;
+
+        if(localStorage.getItem("isAdmin") === "true") {
+            document.body.classList.add('is-admin');
+            document.getElementById('btnLogin').innerText = "Logout (Admin)";
+        }
+
+        // ADDED: Enter key listener for password input
+        document.getElementById('adminPasswordInput').addEventListener('keyup', function(event) {
+            if (event.key === "Enter") {
+                submitAdminLogin();
+            }
+        });
 
         loadDataFromSheet();
     };
@@ -473,6 +552,16 @@
         } else {
             overlay.classList.add('hidden');
         }
+    }
+
+    // --- UTILS ---
+    function formatDatePretty(dateStr) {
+        if (!dateStr) return "";
+        try {
+            const date = new Date(dateStr);
+            if(isNaN(date)) return dateStr; 
+            return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+        } catch(e) { return dateStr; }
     }
 
     // --- API CALLS ---
@@ -609,7 +698,7 @@
     function updateDisplayDate() {
         const dateInput = document.getElementById('attendanceDate');
         const dateVal = dateInput.valueAsDate;
-        const dateStr = dateInput.value; // yyyy-mm-dd
+        const dateStr = dateInput.value; 
 
         if(dateVal) {
             const options = { day: 'numeric', month: 'long', year: 'numeric' };
@@ -667,16 +756,15 @@
         new bootstrap.Modal(document.getElementById('customAlertModal')).show();
     }
 
-    // --- DASHBOARD UPDATE: Clickable Name ---
+    // --- DASHBOARD UPDATE ---
     function renderDashboard() {
         const tbody = document.getElementById('dashboardTableBody');
         tbody.innerHTML = '';
         const filter = document.getElementById('monthFilter').value;
         const statsDisplay = document.getElementById('selected-stats-display');
-        statsDisplay.classList.add('hidden'); // Hide top stats initially
+        statsDisplay.classList.add('hidden'); 
 
         employees.forEach((emp, index) => {
-            // Updated Stats Counter for New Legend
             let stats = { P:0, L:0, A:0, H:0, W:0, Y:0 };
             let empHistory = attendanceHistory.filter(r => String(r.empId) === String(emp.id));
 
@@ -687,7 +775,6 @@
             empHistory.forEach(r => { if(stats[r.status] !== undefined) stats[r.status]++; });
             
             const nameDisplay = emp.leaveDate ? `${emp.name} <span class="badge bg-secondary" style="font-size:10px">LEFT</span>` : emp.name;
-
             const jsonStats = JSON.stringify(stats);
 
             tbody.innerHTML += `
@@ -758,9 +845,9 @@
                     if(record.status==='P') bgClass='bg-p';
                     else if(record.status==='L') bgClass='bg-l';
                     else if(record.status==='A') bgClass='bg-a';
-                    else if(record.status==='H') bgClass='bg-h'; // New H (Half Hour - Cyan)
-                    else if(record.status==='W') bgClass='bg-w'; // New W (Weekend - Gray)
-                    else if(record.status==='Y') bgClass='bg-y'; // New Y (Yearly - Blue)
+                    else if(record.status==='H') bgClass='bg-h'; 
+                    else if(record.status==='W') bgClass='bg-w'; 
+                    else if(record.status==='Y') bgClass='bg-y'; 
 
                     let displayNote = record.note;
                     if (record.status === 'L' && record.note) displayNote = formatTimeAMPM(record.note);
@@ -792,7 +879,6 @@
             const currentStatus = dailySessionData[emp.id]?.status || 'P';
             
             let buttons = '';
-            // Updated Loop for New Legend
             ['P','L','A','H','W','Y'].forEach(code => {
                 let color = code=='P'?'success': code=='L'?'warning': code=='A'?'danger': code=='H'?'info': code=='W'?'secondary':'primary';
                 let checked = currentStatus === code ? 'checked' : '';
@@ -806,7 +892,7 @@
             tbody.innerHTML += `
                 <tr>
                     <td class="fw-bold">${emp.name}</td>
-                    <td class="text-center"><div class="status-group">${buttons}</div></td>
+                    <td class="text-center"><div class="status-group admin-lock">${buttons}</div></td>
                 </tr>
             `;
             if(!dailySessionData[emp.id]) dailySessionData[emp.id] = { status: 'P', note: '' };
@@ -815,9 +901,6 @@
 
     function handleStatusClick(empId, status) {
         dailySessionData[empId].status = status;
-        // Trigger Note/Time modal for relevant statuses
-        // L=Late (Time), A=Absence, H=Half Hour, Y=Yearly (Note)
-        // W=Weekend, P=Present (No Note)
         if (['L', 'A', 'H', 'Y'].includes(status)) {
             openNoteModal(empId, status);
         } else {
@@ -865,16 +948,21 @@
         tbody.innerHTML = '';
         employees.forEach(emp => {
             let statusBtn = '';
+            // Pretty Date for Join Date
+            const prettyJoinDate = formatDatePretty(emp.joinDate);
+
             if(emp.leaveDate) {
-                statusBtn = `<span class="badge bg-secondary">Left: ${emp.leaveDate}</span>`;
+                // Pretty Date for Leave Date
+                const prettyLeaveDate = formatDatePretty(emp.leaveDate);
+                statusBtn = `<span class="badge bg-secondary">Left: ${prettyLeaveDate}</span>`;
             } else {
-                statusBtn = `<button class="btn btn-sm btn-outline-danger" onclick="openResignModal(${emp.id}, '${emp.name}')">Resign / Left</button>`;
+                statusBtn = `<button class="btn btn-sm btn-outline-danger admin-only" onclick="openResignModal(${emp.id}, '${emp.name}')">Resign / Left</button>`;
             }
             tbody.innerHTML += `<tr>
                 <td>${emp.id}</td>
                 <td>${emp.name}</td>
                 <td>${emp.phone}</td>
-                <td>${emp.joinDate}</td>
+                <td>${prettyJoinDate}</td>
                 <td>${statusBtn}</td>
             </tr>`;
         });
